@@ -4,16 +4,16 @@ import copy
 import pickle
 import threading
 
-heuristic = {}
 
-def build_heuristic_db(cube, startingMove, max_moves=4):
-    global heuristic
-    def get_f2l_state(cube):
+def build_heuristic_db(cube, edge, array, max_moves=5):
+    heuristic = {}
+
+    def get_edges(cube, edges):
         edgeArray = []
         edgeOrientaion = []
 
         for i in range(12):
-            if cube.ep[i] == Edge.UB or cube.ep[i] == Edge.UR or cube.ep[i] == Edge.UF or cube.ep[i] == Edge.UL:
+            if cube.ep[i] in edges:
                 edgeArray.append(cube.ep[i])
                 edgeOrientaion.append(cube.eo[i])
             else:
@@ -22,13 +22,31 @@ def build_heuristic_db(cube, startingMove, max_moves=4):
 
         return tuple(edgeArray + edgeOrientaion)
 
-    current_Depth = 1
+    def get_corners(cube, corners):
+        edgeArray = []
+        edgeOrientaion = []
 
-    cube = actions(startingMove, cube)
+        for i in range(8):
+            if cube.cp[i] in corners:
+                edgeArray.append(cube.cp[i])
+                edgeOrientaion.append(cube.co[i])
+            else:
+                edgeArray.append(-1)
+                edgeOrientaion.append(-1)
 
-    que = [(1, get_f2l_state(cube), [])]
+        return tuple(edgeArray + edgeOrientaion)
+
+    current_Depth = 0
+
+    if(edge == True):
+        state = get_edges(cube, array)
+    else:
+        state = get_corners(cube, array)
+
+    que = [(0, state, [])]
+
     while True:
-        if not que:
+        if len(que) == 0:
             break
         depth, previous_state, previous_actions = que.pop(0)  # Using pop(0) for breadth-first search
 
@@ -48,7 +66,10 @@ def build_heuristic_db(cube, startingMove, max_moves=4):
             new_cube = actions(action, new_cube)
             new_actions = previous_actions + [action]
 
-            f2l_state = get_f2l_state(new_cube)
+            if(edge == True):
+                f2l_state = get_edges(new_cube, array)
+            else:
+                f2l_state = get_corners(new_cube, array)
 
             if f2l_state == previous_state:
                 continue
@@ -61,6 +82,32 @@ def build_heuristic_db(cube, startingMove, max_moves=4):
                 continue
 
             que.append((depth + 1, f2l_state, new_actions))
+
+    print(f"Heuristic size: {len(heuristic)}")
+
+    arrayToString = ""
+
+    for value in array:
+        arrayToString += "_" + str(value)
+
+    # Dump the heuristics dictionary into a pickle file
+    if(edge == True):
+        with open(f'heuristicsEdge{arrayToString}.pickle', 'wb') as file:
+            pickle.dump(heuristic, file)
+
+        with open(f'heuristicsEdge{arrayToString}.pickle', 'rb') as file:
+            heuristics = pickle.load(file)
+        print(f"Heuristic size: {len(heuristics)}")
+
+    else:
+        with open(f'heuristicsCorner{arrayToString}.pickle', 'wb') as file:
+            pickle.dump(heuristic, file)
+
+        with open(f'heuristicsCorner{arrayToString}.pickle', 'rb') as file:
+            heuristics = pickle.load(file)
+
+        print(f"Heuristic size: {len(heuristics)}")
+
 
 def actions(action, cube):
     if(action == 0):
@@ -120,72 +167,40 @@ def actions(action, cube):
 
     return cube
 
-t1 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), 0])
-t2 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), 1])
-t3 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), 2])
-t4 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), 3])
-t5 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), 4])
-t6 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), 5])
-t7 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), 6])
-t8 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), 7])
-t9 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), 8])
-t10 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), 9])
-t11 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), 10])
-t12 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), 11])
-t13 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), 12])
-t14 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), 13])
-t15 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), 14])
-t16 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), 15])
-t17 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), 16])
-t18 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), 17])
+cornerOne = [Corner.URF, Corner.UFL, Corner.UBR]
+cornerTwo = [Corner.URF, Corner.UFL, Corner.ULB]
+cornerThree = [Corner.UBR, Corner.UFL, Corner.ULB]
+cornerFour = [Corner.UBR, Corner.ULB, Corner.URF]
+
+edgeOne = [Edge.FR, Edge.FL, Edge.BR]
+edgeTwo = [Edge.FR, Edge.FL, Edge.BL]
+edgeThree = [Edge.BR, Edge.FL, Edge.BL]
+edgeFour = [Edge.BR, Edge.BL, Edge.FR]
+
+t1 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), True, edgeOne])
+t2 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), True, edgeTwo])
+t3 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), True, edgeThree])
+t4 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), True, edgeFour])
+# t5 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), False, cornerOne])
+# t6 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), False, cornerTwo])
+# t7 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), False, cornerThree])
+# t8 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), False, cornerFour])
+
 
 t1.start()
 t2.start()
 t3.start()
 t4.start()
-t5.start()
-t6.start()
-t7.start()
-t8.start()
-t9.start()
-t10.start()
-t11.start()
-t12.start()
-t13.start()
-t14.start()
-t15.start()
-t16.start()
-t17.start()
-t18.start()
-
+# t5.start()
+# t6.start()
+# t7.start()
+# t8.start()
 
 t1.join()
 t2.join()
 t3.join()
 t4.join()
-t5.join()
-t6.join()
-t7.join()
-t8.join()
-t9.join()
-t10.join()
-t11.join()
-t12.join()
-t13.join()
-t14.join()
-t15.join()
-t16.join()
-t17.join()
-t18.join()
-
-print(f"Heuristic size: {len(heuristic)}")
-
-# Dump the heuristics dictionary into a pickle file
-with open('heuristicsEdgeCross.pickle', 'wb') as file:
-    pickle.dump(heuristic, file)
-
-# Load the heuristics dictionary from the pickle file
-with open('heuristicsEdgeCross.pickle', 'rb') as file:
-    heuristics = pickle.load(file)
-
-print(f"Heuristic size: {len(heuristics)}")
+# t5.join()
+# t6.join()
+# t7.join()
+# t8.join()
