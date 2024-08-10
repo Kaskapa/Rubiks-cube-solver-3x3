@@ -2,7 +2,7 @@
 This class describes cubes on the level of the cubies.
 """
 from ..pieces import Corner, Edge
-
+import numpy as np
 
 def choose(n, k):
     """
@@ -570,6 +570,7 @@ _edges = [
     Edge.BL,
     Edge.BR
 ]
+_edgesCross_set = set([Edge.UF, Edge.UR, Edge.UL, Edge.UB])
 
 class CubieCube:
     def __init__(self, corners=None, edges=None, cp=None, co=None, ep=None, eo=None, epc=None, eoc=None, epf=None, eof=None):
@@ -693,9 +694,9 @@ class CubieCube:
         (F*R).co[UBR] = F.co[R.cp[UBR]] + R.co[UBR].
         """
         corner_perm = [self.cp[b.cp[i]] for i in range(8)]
-        self.cp = corner_perm[:]
+        self.cp = corner_perm
         corner_ori = [(self.co[b.cp[i]] + b.co[i]) % 3 if(self.cp[i] != -1) else -1 for i in range(8)]
-        self.co = corner_ori[:]
+        self.co = corner_ori
 
     def edge_multiply(self, b):
         """
@@ -712,61 +713,52 @@ class CubieCube:
         See docstring of corner_multiply (which operates analogously to this
         method) for a description of how the update rules are derived.
         """
-        b_ep = b.ep
-        b_eo = b.eo
-        self_ep = self.ep
-        self_eo = self.eo
-        edgesCross_set = set([Edge.UF, Edge.UR, Edge.UL, Edge.UB])
         self_edges_set = set(self.edges)
 
-        edge_perm = [self_ep[b_ep[i]] for i in range(12)]
-        edge_ori = [(self_eo[b_ep[i]] + b_eo[i]) % 2 for i in range(12)]
+        edge_perm = [self.ep[b.ep[i]] for i in range(12)]
+        edge_ori = [(self.eo[b.ep[i]] + b.eo[i]) % 2 for i in range(12)]
 
         self.eo = edge_ori
         self.ep = edge_perm
 
-        edge_cross_perm = [-1] * 12
-        edge_cross_ori = [-1] * 12
-        edge_f2l_perm = [-1] * 12
-        edge_f2l_ori = [-1] * 12
+        edge_cross_perm = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+        edge_cross_ori = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+        edge_f2l_perm = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+        edge_f2l_ori = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+
+        cross_i = 0
+        f2l_i = 0
+        self_edges_set_len = len(self_edges_set)
 
         for i in range(12):
+            if cross_i == 4 and f2l_i == self_edges_set_len:
+                break
+
             ep_i = edge_perm[i]
             eo_i = edge_ori[i]
 
-            if ep_i in edgesCross_set:
+            if ep_i in _edgesCross_set:
                 edge_cross_perm[i] = ep_i
                 edge_cross_ori[i] = eo_i
+                cross_i += 1
 
             if ep_i in self_edges_set:
                 edge_f2l_perm[i] = ep_i
                 edge_f2l_ori[i] = eo_i
+                f2l_i += 1
 
         self.eoc = edge_cross_ori
         self.epc = edge_cross_perm
         self.eof = edge_f2l_ori
         self.epf = edge_f2l_perm
 
-
-
-    def multiply(self, b):
-        """
-        Compute permutation and orientation of edges and corners after applying
-        permutation represented by b to the current cube.
-
-        Parameters
-        ----------
-        b : CubieCube
-            Permutation to apply represented as a CubieCube
-        """
-        self.corner_multiply(b)
-        self.edge_multiply(b)
-
     def move(self, i):
         """
         Helper function for applying one of 6 canonical moves
         """
-        self.multiply(MOVE_CUBE[i])
+        b = MOVE_CUBE[i]
+        self.corner_multiply(b)
+        self.edge_multiply(b)
 
 
 

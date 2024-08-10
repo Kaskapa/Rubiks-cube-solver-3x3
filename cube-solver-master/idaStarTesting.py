@@ -240,8 +240,8 @@ def heuristic_value(cube, corners, edges):
     stateCross = (*cube.epc, *cube.eoc)
     stateCorner = (*cube.cp, *cube.co)
 
-    h_corner = tableLoader.heurURF_UFL_UBR[stateCorner]
-    h_edge = tableLoader.heurFR_FL_BR[stateEdge]
+    h_corner = tableLoader.heurURF_UFL_ULB[stateCorner]
+    h_edge = tableLoader.heurFR_FL_BL[stateEdge]
 
     if stateCross in tableLoader.heurCross:
         h_cross = tableLoader.heurCross[stateCross] - 1
@@ -254,11 +254,11 @@ def heuristic_value(cube, corners, edges):
 
 if __name__ == "__main__":
     with cProfile.Profile() as pr:
-        corners = [Corner.UBR, Corner.URF, Corner.UFL]
-        edges = [Edge.BR, Edge.FR, Edge.FL]
+        corners = [Corner.ULB, Corner.URF, Corner.UFL]
+        edges = [Edge.BL, Edge.FR, Edge.FL]
         cube = cubiecube.CubieCube(corners=corners, edges=edges)
 
-        cube = do_algorithm("B D' R2 B' U2 L F' R B' D R2 F2 L2 U' F' L2 B U2 L F R", cube)
+        # cube = do_algorithm("B D' R2 B' U2 L F' R B' D R2 F2 L2 U' F' L2 B U2 L F R", cube)
         # cube = do_algorithm("L' D2 F L' D", cube)
         # cube = do_algorithm("R2 B2 R2 B2", cube)
         # cube = do_algorithm("B D L2 B L2 B'", cube)
@@ -266,10 +266,11 @@ if __name__ == "__main__":
         # cube = do_algorithm("B2 D B D' B2", cube)
         # cube = do_algorithm("R D' R'", cube)
 
-        # cube = do_algorithm("F' L' U' B D L U2 D B L2 D2 B' R2 U' B2 R' F2 D' R B2 U", cube)
+        cube = do_algorithm("F' L' U' B D L U2 D B L2 D2 B' R2 U' B2 R' F2 D' R B2 U", cube)
         # cube = do_algorithm("U R F' U' B D", cube)
         # cube = do_algorithm("R L D2 R L' D2 R' D2 R2", cube)
         # cube = do_algorithm("D' B D B' F D F'", cube)
+        # cube = do_algorithm("U D' R2 B' R2 U2 F' U", cube)
         # cube = do_algorithm("D2 R D2 R' B D B'", cube)
         # cube = do_algorithm("D R' B R B'", cube)
         # cube = do_algorithm("F2 R2 F2 R2", cube)
@@ -278,8 +279,6 @@ if __name__ == "__main__":
         # cube = do_algorithm("R F L' U' F L' B' D", cube)
         # cube = do_algorithm("R' D' R", cube)
         # cube = do_algorithm("B D' B B2", cube)
-
-
 
         solver = IDA_star(corners, edges)
         start_time = time.time()
@@ -292,30 +291,6 @@ if __name__ == "__main__":
         end_time = time.time()
         execution_time = end_time - start_time
         print("Execution time:", execution_time, "seconds")
-
-
-        # cube = cubiecube.CubieCube()
-
-        # cube = do_algorithm("U L' F R B L D F' R U' L F D L D2 F2 U' R2 D' F2 D' B R' U'", cube)
-        # cube = do_algorithm("R F L' U' F L' B' D", cube)
-        # cube = do_algorithm("R' D' R", cube)
-        # cube = do_algorithm("B D' B B2", cube)
-
-        # moves = "U' F' D' F' R2 F2 U' D"
-
-        # movesArr = moves.split(" ")
-
-        # corners = [Corner.UBR]
-        # edges = [Edge.BR]
-
-        # for move in movesArr:
-        #     cube = actionsWithNotations(move, cube)
-
-        #     h = heuristic_value(cube, [Corner.URF], [Edge.FR])
-
-        #     print("Heuristic value:", h)
-        #     print(is_goal_state(get_cross_state(cube), get_edge_state(cube, edges), get_corner_state(cube, corners), corners, edges))
-
     stats = pstats.Stats(pr)
     stats.sort_stats(pstats.SortKey.TIME)
     stats.print_stats()

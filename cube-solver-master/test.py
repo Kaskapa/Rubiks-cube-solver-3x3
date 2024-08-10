@@ -9,6 +9,8 @@ from tables import TableLoader
 # print(solution)
 
 
+print(Edge.UR)
+
 cubeOne = cubiecube.CubieCube(corners=[Corner.UBR], edges=[Edge.UR])
 
 cubeOne.move(0)
