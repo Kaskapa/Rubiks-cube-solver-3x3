@@ -1,43 +1,41 @@
 import pickle
-from twophase.cubes import cubiecube
-from twophase.pieces import Edge, Corner
 
 class TableLoader():
     def __init__(self):
-        self.heurUBR = self.loadHeuristic("heuristicsCornerUBR.pickle")
-        self.heurULB = self.loadHeuristic("heuristicsCornerULB.pickle")
-        self.heurUFL = self.loadHeuristic("heuristicsCornerUFL.pickle")
-        self.heurURF = self.loadHeuristic("heuristicsCornerURF.pickle")
-        self.heurBR = self.loadHeuristic("heuristicsEdgeBR.pickle")
-        self.heurBL = self.loadHeuristic("heuristicsEdgeBL.pickle")
-        self.heurFR = self.loadHeuristic("heuristicsEdgeFR.pickle")
-        self.heurFL = self.loadHeuristic("heuristicsEdgeFL.pickle")
+        self.heurUBR = self.loadHeuristic("heuristics/heuristicsCornerUBR.pickle")
+        self.heurULB = self.loadHeuristic("heuristics/heuristicsCornerULB.pickle")
+        self.heurUFL = self.loadHeuristic("heuristics/heuristicsCornerUFL.pickle")
+        self.heurURF = self.loadHeuristic("heuristics/heuristicsCornerURF.pickle")
+        self.heurBR = self.loadHeuristic("heuristics/heuristicsEdgeBR.pickle")
+        self.heurBL = self.loadHeuristic("heuristics/heuristicsEdgeBL.pickle")
+        self.heurFR = self.loadHeuristic("heuristics/heuristicsEdgeFR.pickle")
+        self.heurFL = self.loadHeuristic("heuristics/heuristicsEdgeFL.pickle")
 
-        self.heurCross = self.loadHeuristic("heuristicsEdgeCross.pickle")
+        self.heurCross = self.loadHeuristic("heuristics/heuristicsEdgeCross.pickle")
 
-        self.heurUBR_ULB = self.loadHeuristic("heuristicsCornerUBR_ULB.pickle")
-        self.heurUFL_UBR = self.loadHeuristic("heuristicsCornerUFL_UBR.pickle")
-        self.heurUFL_ULB = self.loadHeuristic("heuristicsCornerUFL_ULB.pickle")
-        self.heurUFL_URF = self.loadHeuristic("heuristicsCornerUFL_URF.pickle")
-        self.heurURF_UBR = self.loadHeuristic("heuristicsCornerURF_UBR.pickle")
-        self.heurURF_ULB = self.loadHeuristic("heuristicsCornerURF_ULB.pickle")
+        self.heurUBR_ULB = self.loadHeuristic("heuristics/heuristicsCornerUBR_ULB.pickle")
+        self.heurUFL_UBR = self.loadHeuristic("heuristics/heuristicsCornerUFL_UBR.pickle")
+        self.heurUFL_ULB = self.loadHeuristic("heuristics/heuristicsCornerUFL_ULB.pickle")
+        self.heurUFL_URF = self.loadHeuristic("heuristics/heuristicsCornerUFL_URF.pickle")
+        self.heurURF_UBR = self.loadHeuristic("heuristics/heuristicsCornerURF_UBR.pickle")
+        self.heurURF_ULB = self.loadHeuristic("heuristics/heuristicsCornerURF_ULB.pickle")
 
-        self.heurBR_BL = self.loadHeuristic("heuristicsEdgeBR_BL.pickle")
-        self.heurFL_BR = self.loadHeuristic("heuristicsEdgeFL_BR.pickle")
-        self.heurFL_BL = self.loadHeuristic("heuristicsEdgeFL_BL.pickle")
-        self.heurFL_FR = self.loadHeuristic("heuristicsEdgeFL_FR.pickle")
-        self.heurFR_BL = self.loadHeuristic("heuristicsEdgeFR_BL.pickle")
-        self.heurFR_BR = self.loadHeuristic("heuristicsEdgeFR_BR.pickle")
+        self.heurBR_BL = self.loadHeuristic("heuristics/heuristicsEdgeBR_BL.pickle")
+        self.heurFL_BR = self.loadHeuristic("heuristics/heuristicsEdgeFL_BR.pickle")
+        self.heurFL_BL = self.loadHeuristic("heuristics/heuristicsEdgeFL_BL.pickle")
+        self.heurFL_FR = self.loadHeuristic("heuristics/heuristicsEdgeFL_FR.pickle")
+        self.heurFR_BL = self.loadHeuristic("heuristics/heuristicsEdgeFR_BL.pickle")
+        self.heurFR_BR = self.loadHeuristic("heuristics/heuristicsEdgeFR_BR.pickle")
 
-        self.heurFR_FL_BL = self.loadHeuristic("heuristicsEdge_8_9_10.pickle")
-        self.heurFR_FL_BR = self.loadHeuristic("heuristicsEdge_8_9_11.pickle")
-        self.heurBR_FL_BL = self.loadHeuristic("heuristicsEdge_11_9_10.pickle")
-        self.heurBR_BL_FR = self.loadHeuristic("heuristicsEdge_11_10_8.pickle")
+        self.heurFR_FL_BL = self.loadHeuristic("heuristics/heuristicsEdge_8_9_10.pickle")
+        self.heurFR_FL_BR = self.loadHeuristic("heuristics/heuristicsEdge_8_9_11.pickle")
+        self.heurBR_FL_BL = self.loadHeuristic("heuristics/heuristicsEdge_11_9_10.pickle")
+        self.heurBR_BL_FR = self.loadHeuristic("heuristics/heuristicsEdge_11_10_8.pickle")
 
-        self.heurURF_UFL_ULB = self.loadHeuristic("heuristicsCorner_0_1_2.pickle")
-        self.heurURF_UFL_UBR = self.loadHeuristic("heuristicsCorner_0_1_3.pickle")
-        self.heurUBR_UFL_ULB = self.loadHeuristic("heuristicsCorner_3_1_2.pickle")
-        self.heurUBR_ULB_URF = self.loadHeuristic("heuristicsCorner_3_2_0.pickle")
+        self.heurURF_UFL_ULB = self.loadHeuristic("heuristics/heuristicsCorner_0_1_2.pickle")
+        self.heurURF_UFL_UBR = self.loadHeuristic("heuristics/heuristicsCorner_0_1_3.pickle")
+        self.heurUBR_UFL_ULB = self.loadHeuristic("heuristics/heuristicsCorner_3_1_2.pickle")
+        self.heurUBR_ULB_URF = self.loadHeuristic("heuristics/heuristicsCorner_3_2_0.pickle")
 
     def loadHeuristic(self, filename):
         with open(filename, 'rb') as file:

@@ -1,4 +1,4 @@
-from twophase.cubes import coordcube, cubiecube
+from twophase.cubes import cubiecube
 from twophase.pieces import Edge, Corner, Color
 import copy
 from tables import TableLoader
@@ -8,6 +8,9 @@ from tables import TableLoader
 
 # print(solution)
 
+table = TableLoader()
+
+table.checkHeuristics()
 
 print(Edge.UR)
 
