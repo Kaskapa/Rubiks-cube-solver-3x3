@@ -167,20 +167,20 @@ def actions(action, cube):
 
     return cube
 
-cornerOne = [Corner.URF, Corner.UFL, Corner.UBR]
+cornerOne = [Corner.URF, Corner.UFL, Corner.UBR, Corner.ULB]
 cornerTwo = [Corner.URF, Corner.UFL, Corner.ULB]
 cornerThree = [Corner.UBR, Corner.UFL, Corner.ULB]
 cornerFour = [Corner.UBR, Corner.ULB, Corner.URF]
 
-edgeOne = [Edge.FR, Edge.FL, Edge.BR]
+edgeOne = [Edge.FR, Edge.FL, Edge.BR, Edge.BL]
 edgeTwo = [Edge.FR, Edge.FL, Edge.BL]
 edgeThree = [Edge.BR, Edge.FL, Edge.BL]
 edgeFour = [Edge.BR, Edge.BL, Edge.FR]
 
 t1 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), True, edgeOne])
-t2 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), True, edgeTwo])
-t3 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), True, edgeThree])
-t4 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), True, edgeFour])
+t2 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), False, cornerOne])
+# t3 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), True, edgeThree])
+# t4 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), True, edgeFour])
 # t5 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), False, cornerOne])
 # t6 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), False, cornerTwo])
 # t7 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), False, cornerThree])
@@ -189,8 +189,8 @@ t4 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), Tr
 
 t1.start()
 t2.start()
-t3.start()
-t4.start()
+# t3.start()
+# t4.start()
 # t5.start()
 # t6.start()
 # t7.start()
@@ -198,8 +198,8 @@ t4.start()
 
 t1.join()
 t2.join()
-t3.join()
-t4.join()
+# t3.join()
+# t4.join()
 # t5.join()
 # t6.join()
 # t7.join()

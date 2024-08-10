@@ -1,4 +1,6 @@
 import pickle
+from twophase.cubes import cubiecube
+from twophase.pieces import Edge, Corner
 
 class TableLoader():
     def __init__(self):
@@ -21,11 +23,21 @@ class TableLoader():
         self.heurURF_ULB = self.loadHeuristic("heuristicsCornerURF_ULB.pickle")
 
         self.heurBR_BL = self.loadHeuristic("heuristicsEdgeBR_BL.pickle")
-        self.heurFL_BL = self.loadHeuristic("heuristicsEdgeFL_BL.pickle")
         self.heurFL_BR = self.loadHeuristic("heuristicsEdgeFL_BR.pickle")
+        self.heurFL_BL = self.loadHeuristic("heuristicsEdgeFL_BL.pickle")
         self.heurFL_FR = self.loadHeuristic("heuristicsEdgeFL_FR.pickle")
         self.heurFR_BL = self.loadHeuristic("heuristicsEdgeFR_BL.pickle")
         self.heurFR_BR = self.loadHeuristic("heuristicsEdgeFR_BR.pickle")
+
+        self.heurFR_FL_BL = self.loadHeuristic("heuristicsEdge_8_9_10.pickle")
+        self.heurFR_FL_BR = self.loadHeuristic("heuristicsEdge_8_9_11.pickle")
+        self.heurBR_FL_BL = self.loadHeuristic("heuristicsEdge_11_9_10.pickle")
+        self.heurBR_BL_FR = self.loadHeuristic("heuristicsEdge_11_10_8.pickle")
+
+        self.heurURF_UFL_ULB = self.loadHeuristic("heuristicsCorner_0_1_2.pickle")
+        self.heurURF_UFL_UBR = self.loadHeuristic("heuristicsCorner_0_1_3.pickle")
+        self.heurUBR_UFL_ULB = self.loadHeuristic("heuristicsCorner_3_1_2.pickle")
+        self.heurUBR_ULB_URF = self.loadHeuristic("heuristicsCorner_3_2_0.pickle")
 
     def loadHeuristic(self, filename):
         with open(filename, 'rb') as file:
@@ -53,4 +65,11 @@ class TableLoader():
         print("FL_FR", len(self.heurFL_FR))
         print("FR_BL", len(self.heurFR_BL))
         print("FR_BR", len(self.heurFR_BR))
-
+        print("FR_FL_BL", len(self.heurFR_FL_BL))
+        print("FR_FL_BR", len(self.heurFR_FL_BR))
+        print("BR_FL_BL", len(self.heurBR_FL_BL))
+        print("BR_BL_FR", len(self.heurBR_BL_FR))
+        print("URF_UFL_ULB", len(self.heurURF_UFL_ULB))
+        print("URF_UFL_UBR", len(self.heurURF_UFL_UBR))
+        print("UBR_UFL_ULB", len(self.heurUBR_UFL_ULB))
+        print("UBR_ULB_URF", len(self.heurUBR_ULB_URF))

@@ -9,10 +9,10 @@ import time
 with open("heuristicsEdgeCross.pickle", 'rb') as file:
     heuristicEdgeCross = pickle.load(file)
 
-with open("heuristicsCorner.pickle", 'rb') as file:
+with open("heuristicsCornerUFL_UBR.pickle", 'rb') as file:
     heuristicCorner= pickle.load(file)
 
-with open("heuristicsEdge.pickle", 'rb') as file:
+with open("heuristicsEdgeFL_BR.pickle", 'rb') as file:
     heuristicEdge = pickle.load(file)
 
 ACTIONS = {
@@ -306,7 +306,9 @@ cube = cubiecube.CubieCube()
 # cube.move(5)
 
 # cube = do_algorithm("B D' R2 B' U2 L F' R B' D R2 F2 L2 U' F' L2 B U2 L F R", cube)
-cube = do_algorithm("L D' B2 L' U2 F R' B L' D B2 R2 B2 U' R' B2 L U2 F R B", cube)
+cube = do_algorithm("F' L' U' B D L U2 D B L2 D2 B' R2 U' B2 R' F2 D' R B2 U", cube)
+cube = do_algorithm("U R F' U' B D", cube)
+
 # cube = do_algorithm("L' D2 F L' D", cube)
 # cube = do_algorithm("F' D2 R F D", cube)
 solver = IDA_star()

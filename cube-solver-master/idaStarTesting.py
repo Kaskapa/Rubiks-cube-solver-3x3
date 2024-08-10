@@ -1,11 +1,10 @@
-import json
-import pickle
 from twophase.cubes import cubiecube
 from twophase.pieces import Edge, Corner
-import copy
 from random import choice
 import time
 from tables import TableLoader
+import cProfile
+import pstats
 
 tableLoader = TableLoader()
 
@@ -29,113 +28,89 @@ ACTIONS = {
     16: "L'",
     17: "B'"
 }
-def is_goal_state(crossState, edgeState, cornerState, corners, edges):
-    cubeCheck = cubiecube.CubieCube()
-    goal_cross_stete = get_cross_state(cubeCheck)
-    goal_edge_state = get_edge_state(cubeCheck, edges)
-    goal_corner_state = get_corner_state(cubeCheck, corners)
 
+REDUNDANT_ACTIONS = {
+    0: [0, 6, 12],
+    1: [1, 7, 13],
+    2: [2, 8, 14],
+    3: [3, 9, 15],
+    4: [4, 10, 16],
+    5: [5, 11, 17],
+    6: [0, 6, 12],
+    7: [1, 7, 13],
+    8: [2, 8, 14],
+    9: [3, 9, 15],
+    10: [4, 10, 16],
+    11: [5, 11, 17],
+    12: [0, 6, 12],
+    13: [1, 7, 13],
+    14: [2, 8, 14],
+    15: [3, 9, 15],
+    16: [4, 10, 16],
+    17: [5, 11, 17]
+}
+
+REDUNDANT_ACTIONS_2 = {
+    0: [3, 9, 15],
+    1: [4, 10, 16],
+    2: [5, 11, 17],
+    3: [0, 6, 12],
+    4: [1, 7, 13],
+    5: [2, 8, 14],
+    6: [3, 9, 15],
+    7: [4, 10, 16],
+    8: [5, 11, 17],
+    9: [0, 6, 12],
+    10: [1, 7, 13],
+    11: [2, 8, 14],
+    12: [3, 9, 15],
+    13: [4, 10, 16],
+    14: [5, 11, 17],
+    15: [0, 6, 12],
+    16: [1, 7, 13],
+    17: [2, 8, 14]
+}
+
+def is_goal_state(crossState, edgeState, cornerState, goal_cross_stete, goal_edge_state, goal_corner_state):
     return crossState == goal_cross_stete and edgeState == goal_edge_state and cornerState == goal_corner_state
 
 def get_edge_state(cube, edges):
-    edgeArray = []
-    edgeOrientaion = []
+    edgeArray = [-1]*12
+    edgeOrientaion = [-1]*12
 
     for i in range(12):
         if cube.ep[i] in edges:
-            edgeArray.append(cube.ep[i])
-            edgeOrientaion.append(cube.eo[i])
-        else:
-            edgeArray.append(-1)
-            edgeOrientaion.append(-1)
+            edgeArray[i] = cube.ep[i]
+            edgeOrientaion[i] = cube.eo[i]
 
     return tuple(edgeArray + edgeOrientaion)
 
 def get_cross_state(cube):
-    edgeArray = []
-    edgeOrientaion = []
+    # edgeArray = [i if i in [Edge.UB, Edge.UR, Edge.UF, Edge.UL] else -1 for i in cube.ep]
+    # edgeOrientaion = [cube.eo[i] if cube.ep[i] in [Edge.UB, Edge.UR, Edge.UF, Edge.UL] else -1 for i in range(len(cube.eo))]
+
+    edgeArray = [-1]*12
+    edgeOrientaion = [-1]*12
+
+    edges = [Edge.UB , Edge.UR, Edge.UF, Edge.UL]
 
     for i in range(12):
-        if cube.ep[i] == Edge.UB or cube.ep[i] == Edge.UR or cube.ep[i] == Edge.UF or cube.ep[i] == Edge.UL:
-            edgeArray.append(cube.ep[i])
-            edgeOrientaion.append(cube.eo[i])
-        else:
-            edgeArray.append(-1)
-            edgeOrientaion.append(-1)
+        if cube.ep[i] in edges:
+            edgeArray[i] = cube.ep[i]
+            edgeOrientaion[i] = cube.eo[i]
 
     return tuple(edgeArray + edgeOrientaion)
 
 def get_corner_state(cube, corners):
-    cornerArray = []
-    cornerOrientation = []
+    cornerArray = [-1]*8
+    cornerOrientation = [-1]*8
 
     for i in range(8):
         if cube.cp[i] in corners:
-            cornerArray.append(cube.cp[i])
-            cornerOrientation.append(cube.co[i])
-        else:
-            cornerArray.append(-1)
-            cornerOrientation.append(-1)
+            cornerArray[i] = cube.cp[i]
+            cornerOrientation[i] = cube.co[i]
 
     return tuple(cornerArray + cornerOrientation)
-
-def actions(action, cube):
-    if(action == 0):
-        cube.move(0)
-    elif(action == 1):
-        cube.move(1)
-    elif(action == 2):
-        cube.move(2)
-    elif(action == 3):
-        cube.move(3)
-    elif(action == 4):
-        cube.move(4)
-    elif(action == 5):
-        cube.move(5)
-    elif(action == 6):
-        cube.move(0)
-        cube.move(0)
-    elif(action == 7):
-        cube.move(1)
-        cube.move(1)
-    elif(action == 8):
-        cube.move(2)
-        cube.move(2)
-    elif(action == 9):
-        cube.move(3)
-        cube.move(3)
-    elif(action == 10):
-        cube.move(4)
-        cube.move(4)
-    elif(action == 11):
-        cube.move(5)
-        cube.move(5)
-    elif(action == 12):
-        cube.move(0)
-        cube.move(0)
-        cube.move(0)
-    elif(action == 13):
-        cube.move(1)
-        cube.move(1)
-        cube.move(1)
-    elif(action == 14):
-        cube.move(2)
-        cube.move(2)
-        cube.move(2)
-    elif(action == 15):
-        cube.move(3)
-        cube.move(3)
-        cube.move(3)
-    elif(action == 16):
-        cube.move(4)
-        cube.move(4)
-        cube.move(4)
-    elif(action == 17):
-        cube.move(5)
-        cube.move(5)
-        cube.move(5)
-
-    return cube
 
 def actionsWithNotations(action, cube):
     if(action == "U"):
@@ -151,48 +126,29 @@ def actionsWithNotations(action, cube):
     elif(action == "B"):
         cube.move(5)
     elif(action == "U'"):
-        cube.move(0)
-        cube.move(0)
-        cube.move(0)
+        cube.move(12)
     elif(action == "R'"):
-        cube.move(1)
-        cube.move(1)
-        cube.move(1)
+        cube.move(13)
     elif(action == "F'"):
-        cube.move(2)
-        cube.move(2)
-        cube.move(2)
+        cube.move(14)
     elif(action == "D'"):
-        cube.move(3)
-        cube.move(3)
-        cube.move(3)
+        cube.move(15)
     elif(action == "L'"):
-        cube.move(4)
-        cube.move(4)
-        cube.move(4)
+        cube.move(16)
     elif(action == "B'"):
-        cube.move(5)
-        cube.move(5)
-        cube.move(5)
+        cube.move(17)
     elif(action == "U2"):
-        cube.move(0)
-        cube.move(0)
+        cube.move(6)
     elif(action == "R2"):
-        cube.move(1)
-        cube.move(1)
+        cube.move(7)
     elif(action == "F2"):
-        cube.move(2)
-        cube.move(2)
+        cube.move(8)
     elif(action == "D2"):
-        cube.move(3)
-        cube.move(3)
+        cube.move(9)
     elif(action == "L2"):
-        cube.move(4)
-        cube.move(4)
+        cube.move(10)
     elif(action == "B2"):
-        cube.move(5)
-        cube.move(5)
-
+        cube.move(11)
     return cube
 
 def do_algorithm(algorithm, cube):
@@ -208,6 +164,10 @@ class IDA_star(object):
         self.transposition_table = {}
         self.corners = corners
         self.edges = edges
+        cubeCheck = cubiecube.CubieCube(corners=corners, edges=edges)
+        self.goal_cross_stete = tuple(cubeCheck.epc + cubeCheck.eoc)
+        self.goal_edge_state = tuple(cubeCheck.epf + cubeCheck.eof)
+        self.goal_corner_state = tuple(cubeCheck.cp + cubeCheck.co)
 
     def run(self, cube):
         threshold = heuristic_value(cube, self.corners, self.edges)
@@ -237,14 +197,21 @@ class IDA_star(object):
             self.transposition_table[cube_state] = (g_score, f_score)
             return f_score
 
-        if is_goal_state(get_cross_state(cube), get_edge_state(cube, self.edges), get_corner_state(cube, self.corners), self.corners, self.edges):
+        if is_goal_state(tuple(cube.epc + cube.eoc), tuple(cube.epf + cube.eof), tuple(cube.cp + cube.co), self.goal_cross_stete, self.goal_edge_state, self.goal_corner_state):
             self.transposition_table[cube_state] = (g_score, True)
             return True
 
         min_cost = float('inf')
         for action in range(18):
-            cube_copy = copy.deepcopy(cube)
-            cube_copy = actions(action, cube_copy)
+            cube_copy = cube.__deepcopy__()
+            # cube_copy = copy.copy(cube)
+            cube_copy.move(action)
+
+            if len(self.moves) > 0 and action in REDUNDANT_ACTIONS[self.moves[-1]]:
+                continue
+
+            if len(self.moves) > 1 and action in REDUNDANT_ACTIONS_2[self.moves[-1]] and action in REDUNDANT_ACTIONS[self.moves[-2]]:
+                continue
 
             self.moves.append(action)
             distance = self.search(cube_copy, g_score + 1, threshold)
@@ -258,90 +225,98 @@ class IDA_star(object):
         return min_cost
 
     def get_cube_state(self, cube):
-        return (tuple(cube.cp), tuple(cube.co), tuple(cube.ep), tuple(cube.eo))
+        # Use tuple concatenation instead of creating separate tuples
+        return (
+            *cube.cp, *cube.co, *cube.ep, *cube.eo
+        )
+
 
 def heuristic_value(cube, corners, edges):
-    startingCube = cubiecube.CubieCube()
+    # stateEdge = get_edge_state(cube, edges)
+    # stateCross = get_cross_state(cube)
+    # stateCorner = get_corner_state(cube, corners)
 
-    startingStateCross = get_cross_state(startingCube)
-    startingStateEdge = get_edge_state(startingCube, edges)
-    startingStateCorner = get_corner_state(startingCube, corners)
+    stateEdge = (*cube.epf, *cube.eof)
+    stateCross = (*cube.epc, *cube.eoc)
+    stateCorner = (*cube.cp, *cube.co)
 
-    tableLoader.heurCross[startingStateCross] = 1
-    tableLoader.heurFL_BR[startingStateEdge] = 0
-    tableLoader.heurUFL_UBR[startingStateCorner] = 0
+    h_corner = tableLoader.heurURF_UFL_UBR[stateCorner]
+    h_edge = tableLoader.heurFR_FL_BR[stateEdge]
 
-    stateEdge = get_edge_state(cube, edges)
-    stateCross = get_cross_state(cube)
-    stateCorner = get_corner_state(cube, corners)
-
-    h_corner = tableLoader.heurUFL_UBR.get(stateCorner, 6)
-    h_edge = tableLoader.heurFL_BR.get(stateEdge, 6)
-    h_cross = tableLoader.heurCross.get(stateCross, 7) - 1
-
-    # Weighted sum
-    weighted_sum = (3 * h_corner + 2 * h_cross + h_edge) / 6
-
-    # h_value = max(h_corner, h_cross, h_edge, weighted_sum)
+    if stateCross in tableLoader.heurCross:
+        h_cross = tableLoader.heurCross[stateCross] - 1
+    else:
+        h_cross = 6
 
     h_value = h_corner + h_cross + h_edge
 
     return h_value
 
-cube = cubiecube.CubieCube()
+if __name__ == "__main__":
+    with cProfile.Profile() as pr:
+        corners = [Corner.UBR, Corner.URF, Corner.UFL]
+        edges = [Edge.BR, Edge.FR, Edge.FL]
+        cube = cubiecube.CubieCube(corners=corners, edges=edges)
 
-# cube = do_algorithm("B D' R2 B' U2 L F' R B' D R2 F2 L2 U' F' L2 B U2 L F R", cube)
-# cube = do_algorithm("L' D2 F L' D", cube)
-# cube = do_algorithm("R2 B2 R2 B2", cube)
-# cube = do_algorithm("B D L2 B L2 B'", cube)
-# cube = do_algorithm("L' D L2 B' L' D2 B", cube)
-# cube = do_algorithm("B2 D B D' B2", cube)
-# cube = do_algorithm("R D' R'", cube)
+        cube = do_algorithm("B D' R2 B' U2 L F' R B' D R2 F2 L2 U' F' L2 B U2 L F R", cube)
+        # cube = do_algorithm("L' D2 F L' D", cube)
+        # cube = do_algorithm("R2 B2 R2 B2", cube)
+        # cube = do_algorithm("B D L2 B L2 B'", cube)
+        # cube = do_algorithm("L' D L2 B' L' D2 B", cube)
+        # cube = do_algorithm("B2 D B D' B2", cube)
+        # cube = do_algorithm("R D' R'", cube)
 
-cube = do_algorithm("F' L' U' B D L U2 D B L2 D2 B' R2 U' B2 R' F2 D' R B2 U", cube)
-cube = do_algorithm("U R F' U' B D", cube)
-cube = do_algorithm("F2 R2 F2 R2", cube)
+        # cube = do_algorithm("F' L' U' B D L U2 D B L2 D2 B' R2 U' B2 R' F2 D' R B2 U", cube)
+        # cube = do_algorithm("U R F' U' B D", cube)
+        # cube = do_algorithm("R L D2 R L' D2 R' D2 R2", cube)
+        # cube = do_algorithm("D' B D B' F D F'", cube)
+        # cube = do_algorithm("D2 R D2 R' B D B'", cube)
+        # cube = do_algorithm("D R' B R B'", cube)
+        # cube = do_algorithm("F2 R2 F2 R2", cube)
 
-# cube = do_algorithm("U L' F R B L D F' R U' L F D L D2 F2 U' R2 D' F2 D' B R' U'", cube)
-# cube = do_algorithm("R F L' U' F L' B' D", cube)
-# cube = do_algorithm("R' D' R", cube)
-# cube = do_algorithm("B D' B B2", cube)
-
-corners = [Corner.UBR, Corner.UFL]
-edges = [Edge.BR, Edge.FL]
-
-solver = IDA_star(corners, edges)
-start_time = time.time()
-moves = solver.run(cube)
-
-for move in moves:
-    print(ACTIONS[move], end=" ")
-print()
-
-end_time = time.time()
-execution_time = end_time - start_time
-print("Execution time:", execution_time, "seconds")
+        # cube = do_algorithm("U L' F R B L D F' R U' L F D L D2 F2 U' R2 D' F2 D' B R' U'", cube)
+        # cube = do_algorithm("R F L' U' F L' B' D", cube)
+        # cube = do_algorithm("R' D' R", cube)
+        # cube = do_algorithm("B D' B B2", cube)
 
 
-# cube = cubiecube.CubieCube()
 
-# cube = do_algorithm("U L' F R B L D F' R U' L F D L D2 F2 U' R2 D' F2 D' B R' U'", cube)
-# cube = do_algorithm("R F L' U' F L' B' D", cube)
-# cube = do_algorithm("R' D' R", cube)
-# cube = do_algorithm("B D' B B2", cube)
+        solver = IDA_star(corners, edges)
+        start_time = time.time()
+        moves = solver.run(cube)
 
-# moves = "U' F' D' F' R2 F2 U' D"
+        for move in moves:
+            print(ACTIONS[move], end=" ")
+        print()
 
-# movesArr = moves.split(" ")
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print("Execution time:", execution_time, "seconds")
 
-# corners = [Corner.UBR]
-# edges = [Edge.BR]
 
-# for move in movesArr:
-#     cube = actionsWithNotations(move, cube)
+        # cube = cubiecube.CubieCube()
 
-#     h = heuristic_value(cube, [Corner.URF], [Edge.FR])
+        # cube = do_algorithm("U L' F R B L D F' R U' L F D L D2 F2 U' R2 D' F2 D' B R' U'", cube)
+        # cube = do_algorithm("R F L' U' F L' B' D", cube)
+        # cube = do_algorithm("R' D' R", cube)
+        # cube = do_algorithm("B D' B B2", cube)
 
-#     print("Heuristic value:", h)
-#     print(is_goal_state(get_cross_state(cube), get_edge_state(cube, edges), get_corner_state(cube, corners), corners, edges))
+        # moves = "U' F' D' F' R2 F2 U' D"
+
+        # movesArr = moves.split(" ")
+
+        # corners = [Corner.UBR]
+        # edges = [Edge.BR]
+
+        # for move in movesArr:
+        #     cube = actionsWithNotations(move, cube)
+
+        #     h = heuristic_value(cube, [Corner.URF], [Edge.FR])
+
+        #     print("Heuristic value:", h)
+        #     print(is_goal_state(get_cross_state(cube), get_edge_state(cube, edges), get_corner_state(cube, corners), corners, edges))
+
+    stats = pstats.Stats(pr)
+    stats.sort_stats(pstats.SortKey.TIME)
+    stats.print_stats()
 
