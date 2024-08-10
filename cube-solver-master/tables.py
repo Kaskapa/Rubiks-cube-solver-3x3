@@ -6,6 +6,7 @@ class TableLoader():
         self.heurULB = self.loadHeuristic("heuristics/heuristicsCornerULB.pickle")
         self.heurUFL = self.loadHeuristic("heuristics/heuristicsCornerUFL.pickle")
         self.heurURF = self.loadHeuristic("heuristics/heuristicsCornerURF.pickle")
+
         self.heurBR = self.loadHeuristic("heuristics/heuristicsEdgeBR.pickle")
         self.heurBL = self.loadHeuristic("heuristics/heuristicsEdgeBL.pickle")
         self.heurFR = self.loadHeuristic("heuristics/heuristicsEdgeFR.pickle")
@@ -36,6 +37,38 @@ class TableLoader():
         self.heurURF_UFL_UBR = self.loadHeuristic("heuristics/heuristicsCorner_0_1_3.pickle")
         self.heurUBR_UFL_ULB = self.loadHeuristic("heuristics/heuristicsCorner_3_1_2.pickle")
         self.heurUBR_ULB_URF = self.loadHeuristic("heuristics/heuristicsCorner_3_2_0.pickle")
+
+        self.all_heur = {
+            "0" : self.heurURF,
+            "1" : self.heurUFL,
+            "2" : self.heurULB,
+            "3" : self.heurUBR,
+            "01" : self.heurUFL_URF,
+            "02" : self.heurURF_ULB,
+            "03" : self.heurURF_UBR,
+            "12" : self.heurUFL_ULB,
+            "13" : self.heurUFL_UBR,
+            "23" : self.heurUBR_ULB,
+            "012" : self.heurURF_UFL_ULB,
+            "013" : self.heurURF_UFL_UBR,
+            "023" : self.heurUBR_UFL_ULB,
+            "123" : self.heurUBR_ULB_URF,
+            "8" : self.heurFR,
+            "9" : self.heurFL,
+            "10" : self.heurBL,
+            "11" : self.heurBR,
+            "89" : self.heurFL_FR,
+            "810" : self.heurFL_BL,
+            "811" : self.heurFL_BR,
+            "910" : self.heurFR_BL,
+            "911" : self.heurFR_BR,
+            "1011" : self.heurBR_BL,
+            "8910" : self.heurFR_FL_BL,
+            "8911" : self.heurFR_FL_BR,
+            "91011" : self.heurBR_FL_BL,
+            "81011" : self.heurBR_BL_FR,
+            "0123" : self.heurCross
+        }
 
     def loadHeuristic(self, filename):
         with open(filename, 'rb') as file:

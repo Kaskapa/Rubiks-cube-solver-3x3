@@ -158,7 +158,7 @@ def do_algorithm(algorithm, cube):
     return cube
 
 class IDA_star(object):
-    def __init__(self, corners, edges, max_depth=100):
+    def __init__(self, corners, edges, cornerStr, edgeStr, max_depth=100):
         self.max_depth = max_depth
         self.moves = []
         self.transposition_table = {}
@@ -168,9 +168,12 @@ class IDA_star(object):
         self.goal_cross_stete = tuple(cubeCheck.epc + cubeCheck.eoc)
         self.goal_edge_state = tuple(cubeCheck.epf + cubeCheck.eof)
         self.goal_corner_state = tuple(cubeCheck.cp + cubeCheck.co)
+        self.cornerHeur = tableLoader.all_heur[cornerStr]
+        self.edgeHeur = tableLoader.all_heur[edgeStr]
+        self.crossHeur = tableLoader.heurCross
 
     def run(self, cube):
-        threshold = heuristic_value(cube, self.corners, self.edges)
+        threshold = heuristic_value(cube, self.crossHeur, self.cornerHeur, self.edgeHeur)
         while threshold <= self.max_depth:
             print("Threshold:", threshold)
             self.moves = []
@@ -192,7 +195,7 @@ class IDA_star(object):
             if stored_g_score <= g_score:
                 return stored_result
 
-        f_score = g_score + heuristic_value(cube, self.corners, self.edges)
+        f_score = g_score + heuristic_value(cube, self.crossHeur, self.cornerHeur, self.edgeHeur)
         if f_score > threshold:
             self.transposition_table[cube_state] = (g_score, f_score)
             return f_score
@@ -231,7 +234,7 @@ class IDA_star(object):
         )
 
 
-def heuristic_value(cube, corners, edges):
+def heuristic_value(cube, crossHeur, cornerHeur, edgeHeur):
     # stateEdge = get_edge_state(cube, edges)
     # stateCross = get_cross_state(cube)
     # stateCorner = get_corner_state(cube, corners)
@@ -240,11 +243,11 @@ def heuristic_value(cube, corners, edges):
     stateCross = (*cube.epc, *cube.eoc)
     stateCorner = (*cube.cp, *cube.co)
 
-    h_corner = tableLoader.heurURF_UFL_ULB[stateCorner]
-    h_edge = tableLoader.heurFR_FL_BL[stateEdge]
+    h_corner = cornerHeur[stateCorner]
+    h_edge = edgeHeur[stateEdge]
 
     if stateCross in tableLoader.heurCross:
-        h_cross = tableLoader.heurCross[stateCross] - 1
+        h_cross = crossHeur[stateCross] - 1
     else:
         h_cross = 6
 
@@ -254,13 +257,24 @@ def heuristic_value(cube, corners, edges):
 
 if __name__ == "__main__":
     # with cProfile.Profile() as pr:
-    corners = [Corner.ULB, Corner.URF, Corner.UFL]
-    edges = [Edge.BL, Edge.FR, Edge.FL]
+    corners = [Corner.URF, Corner.UFL, Corner.ULB]
+    edges = [Edge.FR, Edge.FL, Edge.BL]
+
+    cornerStr = [corner.value for corner in corners]
+    edgeStr = [edge.value for edge in edges]
+
+    cornerStr.sort()
+    edgeStr.sort()
+
+    cornerStr = "".join(str(x) for x in cornerStr)
+    edgeStr = "".join(str(x) for x in edgeStr)
+
     cube = cubiecube.CubieCube(corners=corners, edges=edges)
     cube = do_algorithm("F' L' U' B D L U2 D B L2 D2 B' R2 U' B2 R' F2 D' R B2 U", cube)
+    cube = do_algorithm("U R2 U' R' B' R2 B2 R", cube)
+    cube = do_algorithm("R U F U B2 L B2 U2", cube)
 
-
-    solver = IDA_star(corners, edges)
+    solver = IDA_star(corners, edges, cornerStr, edgeStr)
     start_time = time.time()
     moves = solver.run(cube)
 

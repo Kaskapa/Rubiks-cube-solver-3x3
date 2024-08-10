@@ -12,7 +12,7 @@ table = TableLoader()
 
 table.checkHeuristics()
 
-print(Edge.UR)
+print(str(Corner.URF) + str(Corner.UFL))
 
 cubeOne = cubiecube.CubieCube(corners=[Corner.UBR], edges=[Edge.UR])
 
