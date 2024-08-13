@@ -1,6 +1,5 @@
 from twophase.cubes import cubiecube
 from twophase.pieces import Edge, Corner, Color
-import copy
 from tables import TableLoader
 # solution = solve("BUBDUFDDFDRLBRBBLFBRLRFULBUUDRUDURDDDLLLLBUFFURRLBFRFF")
 
@@ -10,10 +9,10 @@ from tables import TableLoader
 
 table = TableLoader()
 
-table.checkHeuristics()
+table.fixCrossHeruistic()
 
-print(str(Corner.URF) + str(Corner.UFL))
+# print(str(Corner.URF) + str(Corner.UFL))
 
-cubeOne = cubiecube.CubieCube(corners=[Corner.UBR], edges=[Edge.UR])
+# cubeOne = cubiecube.CubieCube(corners=[Corner.UBR], edges=[Edge.UR])
 
-cubeOne.move(0)
+# cubeOne.move(0)

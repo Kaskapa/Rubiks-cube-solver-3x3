@@ -1,5 +1,5 @@
 from twophase.cubes import cubiecube
-from twophase.pieces import Edge, Corner, Color
+from twophase.pieces import Edge, Corner
 import copy
 import pickle
 import threading

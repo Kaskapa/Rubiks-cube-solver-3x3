@@ -2,7 +2,6 @@
 This class describes cubes on the level of the cubies.
 """
 from ..pieces import Corner, Edge
-import numpy as np
 
 def choose(n, k):
     """
