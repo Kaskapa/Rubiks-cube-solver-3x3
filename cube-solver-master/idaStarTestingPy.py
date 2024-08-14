@@ -227,8 +227,8 @@ if __name__ == "__main__":
     f2l_corners_combinations = list(permutations(f2l_corners, 3))
     f2l_edges_combinations = list(permutations(f2l_edges, 3))
 
-
     all_sol = []
+    sol_heur = {}
 
     start_time_main = time.time()
     with cProfile.Profile() as pr:
@@ -261,6 +261,10 @@ if __name__ == "__main__":
                 cornerStr = "".join(str(x) for x in cornerStr)
                 edgeStr = "".join(str(x) for x in edgeStr)
 
+                if (cornerStr, edgeStr) in sol_heur:
+                    f2l_sol.append(sol_heur[(cornerStr, edgeStr)])
+                    continue
+
                 solver = IDA_star(corners, edges, cornerStr, edgeStr)
                 start_time = time.time()
                 moves = solver.run(cube)
@@ -270,9 +274,11 @@ if __name__ == "__main__":
 
                 print("Execution time:", end_time - start_time, "seconds")
 
+                sol_heur[(cornerStr, edgeStr)] = moves
             print("Scramble:", scramble)
 
             print("Cross solution:" , cross_sol)
+
 
             for alg in f2l_sol:
                 for move in alg:
