@@ -1,18 +1,27 @@
 from twophase.cubes import cubiecube
 from twophase.pieces import Edge, Corner, Color
 from tables import TableLoader
-# solution = solve("BUBDUFDDFDRLBRBBLFBRLRFULBUUDRUDURDDDLLLLBUFFURRLBFRFF")
+from multiprocessing import Process
 
-# #  U1-U9, R1-R9, F1-F9, D1-D9, L1-L9, B1-B9.
 
-# print(solution)
+def print_func(continent='Asia'):
+    print('The name of continent is : ', continent)
 
-table = TableLoader()
+if __name__ == "__main__":  # confirms that the code is under main function
+    names = ['America', 'Europe', 'Africa']
+    procs = []
+    proc = Process(target=print_func)  # instantiating without any argument
+    procs.append(proc)
+    proc.start()
 
-table.fixCrossHeruistic()
+    # instantiating process with arguments
+    for name in names:
+        # print(name)
+        proc = Process(target=print_func, args=(name,))
+        procs.append(proc)
+        proc.start()
 
-# print(str(Corner.URF) + str(Corner.UFL))
+    # complete the processes
+    for proc in procs:
+        proc.join()
 
-# cubeOne = cubiecube.CubieCube(corners=[Corner.UBR], edges=[Edge.UR])
-
-# cubeOne.move(0)

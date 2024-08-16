@@ -5,7 +5,7 @@ import pickle
 import threading
 
 
-def build_heuristic_db(cube, edge, array, max_moves=6):
+def build_heuristic_db(cube, edge, array, max_moves=5):
     heuristic = {}
 
     def get_edges(cube, edges):
