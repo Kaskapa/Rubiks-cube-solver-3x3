@@ -1,47 +1,46 @@
 from twophase.cubes import cubiecube
 from twophase.pieces import Edge, Corner
-import copy
 import pickle
 import threading
 
 
-def build_heuristic_db(cube, edge, array, max_moves=5):
+def build_heuristic_db(cube, edge, array, array2, max_moves=4):
     heuristic = {}
 
-    def get_edges(cube, edges):
-        edgeArray = []
-        edgeOrientaion = []
+    def get_edges(cube):
+        # edgeArray = []
+        # edgeOrientaion = []
 
-        for i in range(12):
-            if cube.ep[i] in edges:
-                edgeArray.append(cube.ep[i])
-                edgeOrientaion.append(cube.eo[i])
-            else:
-                edgeArray.append(-1)
-                edgeOrientaion.append(-1)
+        # for i in range(12):
+        #     if cube.ep[i] in edges:
+        #         edgeArray.append(cube.ep[i])
+        #         edgeOrientaion.append(cube.eo[i])
+        #     else:
+        #         edgeArray.append(-1)
+        #         edgeOrientaion.append(-1)
 
-        return tuple(edgeArray + edgeOrientaion)
+        return tuple(cube.epf + cube.eof)
 
-    def get_corners(cube, corners):
-        edgeArray = []
-        edgeOrientaion = []
+    def get_corners(cube):
+        # edgeArray = []
+        # edgeOrientaion = []
 
-        for i in range(8):
-            if cube.cp[i] in corners:
-                edgeArray.append(cube.cp[i])
-                edgeOrientaion.append(cube.co[i])
-            else:
-                edgeArray.append(-1)
-                edgeOrientaion.append(-1)
+        # for i in range(8):
+        #     if cube.cp[i] in corners:
+        #         edgeArray.append(cube.cp[i])
+        #         edgeOrientaion.append(cube.co[i])
+        #     else:
+        #         edgeArray.append(-1)
+        #         edgeOrientaion.append(-1)
 
-        return tuple(edgeArray + edgeOrientaion)
+        return tuple(cube.cp + cube.co)
 
     current_Depth = 0
 
     if(edge == True):
-        state = get_edges(cube, array)
+        state = get_edges(cube)
     else:
-        state = get_corners(cube, array)
+        state = get_corners(cube)
 
     que = [(0, state, [])]
 
@@ -54,7 +53,7 @@ def build_heuristic_db(cube, edge, array, max_moves=5):
             print(f"Current depth: {depth}")
             current_Depth = depth
 
-        current_cube = cubiecube.CubieCube()
+        current_cube = cubiecube.CubieCube(corners=array2, edges=array)
         for action in previous_actions:
             current_cube = actions(action, current_cube)
 
@@ -62,14 +61,14 @@ def build_heuristic_db(cube, edge, array, max_moves=5):
             continue
 
         for action in range(18):
-            new_cube = copy.deepcopy(current_cube)
+            new_cube = current_cube.__deepcopy__()
             new_cube = actions(action, new_cube)
             new_actions = previous_actions + [action]
 
             if(edge == True):
-                f2l_state = get_edges(new_cube, array)
+                f2l_state = get_edges(new_cube)
             else:
-                f2l_state = get_corners(new_cube, array)
+                f2l_state = get_corners(new_cube)
 
             if f2l_state == previous_state:
                 continue
@@ -83,15 +82,15 @@ def build_heuristic_db(cube, edge, array, max_moves=5):
 
             que.append((depth + 1, f2l_state, new_actions))
 
-    print(f"Heuristic size: {len(heuristic)}")
+    print(f"Heuristic size: {len(heuristic)} {edge}")
 
     arrayToString = ""
 
-    for value in array:
-        arrayToString += "_" + str(value)
 
     # Dump the heuristics dictionary into a pickle file
     if(edge == True):
+        for value in array:
+            arrayToString += "_" + str(value.value)
         with open(f'heuristicsEdge{arrayToString}.pickle', 'wb') as file:
             pickle.dump(heuristic, file)
 
@@ -100,6 +99,8 @@ def build_heuristic_db(cube, edge, array, max_moves=5):
         print(f"Heuristic size: {len(heuristics)}")
 
     else:
+        for value in array2:
+            arrayToString += "_" + str(value.value)
         with open(f'heuristicsCorner{arrayToString}.pickle', 'wb') as file:
             pickle.dump(heuristic, file)
 
@@ -177,8 +178,8 @@ edgeTwo = [Edge.FR, Edge.FL, Edge.BL]
 edgeThree = [Edge.BR, Edge.FL, Edge.BL]
 edgeFour = [Edge.BR, Edge.BL, Edge.FR]
 
-t1 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), True, edgeOne])
-t2 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), False, cornerOne])
+t1 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), True, edgeOne, cornerOne])
+t2 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), False, edgeOne, cornerOne])
 # t3 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), True, edgeThree])
 # t4 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), True, edgeFour])
 # t5 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), False, cornerOne])

@@ -3,6 +3,7 @@ from twophase.pieces import Edge, Corner
 import time
 from tables import TableLoader
 from itertools import permutations
+from idaStarCross import IDA_star_cross
 
 tableLoader = TableLoader()
 
@@ -188,7 +189,7 @@ class IDA_star(object):
 
     def get_cube_state(self, cube):
         return (
-            *cube.cp, *cube.co, *cube.ep, *cube.eo
+            *cube.cp, *cube.co, *cube.epf, *cube.eof, *cube.epc, *cube.eoc
         )
 
     def heuristic_value(self, cube):
@@ -196,25 +197,34 @@ class IDA_star(object):
         stateCross = (*cube.epc, *cube.eoc)
         stateCorner = (*cube.cp, *cube.co)
 
-        h_corner = self.cornerHeur[stateCorner]
-        h_edge = self.edgeHeur[stateEdge]
+        if stateCorner in self.cornerHeur:
+            h_corner = self.cornerHeur[stateCorner]
+        else:
+            h_corner = 5
+
+        if stateEdge in self.edgeHeur:
+            h_edge = self.edgeHeur[stateEdge]
+        else:
+            h_edge = 5
 
         if stateCross in tableLoader.heurCross:
             h_cross = self.crossHeur[stateCross] - 1
         else:
-            h_cross = 8
+            h_cross = 5
 
         h_value = h_corner + h_cross + h_edge
 
         return h_value
 
 if __name__ == "__main__":
-    # scramble = "B F L2 B2 R' D' F R B2 U' R F2 U' B2 R' U2 B L' F' R" #Slow
-    # scramble = "U' B R' F2 U' L B' R F' U B2 L D F2 D2 B R F' U R D' B' R2 U'"
-    # cross_sol = "B L U' D' L B2"
-
     scramble = input("Enter scramble: ")
-    cross_sol = input("Enter cross solution: ")
+
+    cube = cubiecube.CubieCube()
+    cube = do_algorithm(scramble, cube)
+
+    cross_sovler = IDA_star_cross()
+    cross_sol = cross_sovler.run(cube)
+    cross_sol = " ".join([ACTIONS[move] for move in cross_sol])
 
     solved_f2l_corners = []
     solved_f2l_edges = []
@@ -236,9 +246,6 @@ if __name__ == "__main__":
         f2l_corners = f2l_corners_combinations[j]
         f2l_edges= f2l_edges_combinations[j]
         for i, corner in enumerate(f2l_corners):
-            if i == 3:
-                break
-
             corners = f2l_corners[:i+1]
             edges = f2l_edges[:i+1]
 
@@ -306,13 +313,9 @@ if __name__ == "__main__":
             print(ACTIONS[move], end=" ")
         print()
 
-    # stats = pstats.Stats(pr)
-    # stats.sort_stats(pstats.SortKey.TIME)
-    # stats.print_stats()
-
     # # with cProfile.Profile() as pr:
-    # corners = [Corner.URF, Corner.UFL, Corner.ULB]
-    # edges = [Edge.FR, Edge.FL, Edge.BL]
+    # corners = [Corner.URF]
+    # edges = [Edge.FR]
 
     # cornerStr = [corner.value for corner in corners]
     # edgeStr = [edge.value for edge in edges]
@@ -324,10 +327,8 @@ if __name__ == "__main__":
     # edgeStr = "".join(str(x) for x in edgeStr)
 
     # cube = cubiecube.CubieCube(corners=corners, edges=edges)
-    # cube = do_algorithm("D U' L' B R' U B2 L F' U' R D2 F' L' B' U' F' D2 L F2 R' U", cube)
-    # cube = do_algorithm("R2 U' D' R2", cube)
-    # cube = do_algorithm("F D' L' D2 F' U' F' U D L", cube)
-    # cube = do_algorithm("F2 D' F2 U2 D' B2 D U2", cube)
+    # cube = do_algorithm(input("Enter scramble: "), cube)
+    # cube = do_algorithm(input("Enter cross solution: "), cube)
 
     # solver = IDA_star(corners, edges, cornerStr, edgeStr)
     # start_time = time.time()
