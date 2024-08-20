@@ -128,7 +128,7 @@ class IDA_star(object):
         cubeCheck = cubiecube.CubieCube(corners=self.corners, edges=self.edges)
         self.goal_cross_stete = tuple(cubeCheck.epc + cubeCheck.eoc)
         self.goal_edge_state = tuple(cubeCheck.epf + cubeCheck.eof)
-        self.goal_corner_state = tuple(cubeCheck.cp + cubeCheck.co)
+        self.goal_corner_state = tuple(cubeCheck.cpf + cubeCheck.cof)
         self.cornerHeur = tableLoader.all_heur[cornerStr]
         self.edgeHeur = tableLoader.all_heur[edgeStr]
         self.crossHeur = tableLoader.heurCross
@@ -161,7 +161,7 @@ class IDA_star(object):
             self.transposition_table[cube_state] = (g_score, f_score)
             return f_score
 
-        if is_goal_state(tuple(cube.epc + cube.eoc), tuple(cube.epf + cube.eof), tuple(cube.cp + cube.co), self.goal_cross_stete, self.goal_edge_state, self.goal_corner_state) == True:
+        if is_goal_state(tuple(cube.epc + cube.eoc), tuple(cube.epf + cube.eof), tuple(cube.cpf + cube.cof), self.goal_cross_stete, self.goal_edge_state, self.goal_corner_state) == True:
             self.transposition_table[cube_state] = (g_score, True)
             return True
 
@@ -189,32 +189,38 @@ class IDA_star(object):
 
     def get_cube_state(self, cube):
         return (
-            *cube.cp, *cube.co, *cube.epf, *cube.eof, *cube.epc, *cube.eoc
+            *cube.cpf, *cube.cof, *cube.epf, *cube.eof, *cube.epc, *cube.eoc
         )
 
     def heuristic_value(self, cube):
         stateEdge = (*cube.epf, *cube.eof)
         stateCross = (*cube.epc, *cube.eoc)
-        stateCorner = (*cube.cp, *cube.co)
+        stateCorner = (*cube.cpf, *cube.cof)
 
-        if stateCorner in self.cornerHeur:
+        h_corner = h_cross = h_edge = 5  # Initialize with default value
+
+        # Check corner heuristic
+        try:
             h_corner = self.cornerHeur[stateCorner]
-        else:
-            h_corner = 5
+        except KeyError:
+            pass  # h_corner remains 5
 
-        if stateEdge in self.edgeHeur:
+        # Check edge heuristic
+        try:
             h_edge = self.edgeHeur[stateEdge]
-        else:
-            h_edge = 5
+        except KeyError:
+            pass  # h_edge remains 5
 
-        if stateCross in tableLoader.heurCross:
+        # Check cross heuristic
+        try:
             h_cross = self.crossHeur[stateCross] - 1
-        else:
-            h_cross = 5
+        except KeyError:
+            pass  # h_cross remains 5
 
         h_value = h_corner + h_cross + h_edge
 
         return h_value
+
 
 if __name__ == "__main__":
     scramble = input("Enter scramble: ")
@@ -238,80 +244,86 @@ if __name__ == "__main__":
     all_sol = []
     sol_heur = {}
 
+    import cProfile
+    import pstats
+
     start_time_main = time.time()
-    # with cProfile.Profile() as pr:
+    with cProfile.Profile() as pr:
+        for j in range(len(f2l_corners_combinations)):
+            f2l_sol = []
+            f2l_corners = f2l_corners_combinations[j]
+            f2l_edges= f2l_edges_combinations[j]
+            for i, corner in enumerate(f2l_corners):
+                corners = f2l_corners[:i+1]
+                edges = f2l_edges[:i+1]
 
-    for j in range(len(f2l_corners_combinations)):
-        f2l_sol = []
-        f2l_corners = f2l_corners_combinations[j]
-        f2l_edges= f2l_edges_combinations[j]
-        for i, corner in enumerate(f2l_corners):
-            corners = f2l_corners[:i+1]
-            edges = f2l_edges[:i+1]
+                cube = cubiecube.CubieCube(corners=corners, edges=edges)
+                cube = do_algorithm(scramble, cube)
+                cube = do_algorithm(cross_sol, cube)
 
-            cube = cubiecube.CubieCube(corners=corners, edges=edges)
-            cube = do_algorithm(scramble, cube)
-            cube = do_algorithm(cross_sol, cube)
+                for alg in f2l_sol:
+                    for move in alg:
+                        cube.move(move)
+
+                cornerStr = [corner.value for corner in corners]
+                edgeStr = [edge.value for edge in edges]
+
+                cornerStr.sort()
+                edgeStr.sort()
+
+                cornerStr = "".join(str(x) for x in cornerStr)
+                edgeStr = "".join(str(x) for x in edgeStr)
+
+                if (cornerStr, edgeStr, str(cube.cof), str(cube.cpf), str(cube.eo), str(cube.ep)) in sol_heur:
+                    f2l_sol.append(sol_heur[(cornerStr, edgeStr, str(cube.cof), str(cube.cpf), str(cube.eo), str(cube.ep))])
+                    continue
+
+                solver = IDA_star(corners, edges, cornerStr, edgeStr)
+                start_time = time.time()
+                moves = solver.run(cube)
+
+                f2l_sol.append(moves)
+                end_time = time.time()
+
+                print("Execution time:", end_time - start_time, "seconds")
+
+                sol_heur[(cornerStr, edgeStr, str(cube.cof), str(cube.cpf), str(cube.eo), str(cube.ep))] = moves
+            print("Scramble:", scramble)
+
+            print("Cross solution:" , cross_sol)
+
 
             for alg in f2l_sol:
                 for move in alg:
-                    cube.move(move)
+                    print(ACTIONS[move], end=" ")
+                print()
+            all_sol.append(f2l_sol)
 
-            cornerStr = [corner.value for corner in corners]
-            edgeStr = [edge.value for edge in edges]
+        end_time_main = time.time()
+        print("Execution time:", end_time_main - start_time_main, "seconds")
+        print("All solutions:", all_sol)
 
-            cornerStr.sort()
-            edgeStr.sort()
+        min_index = 0
+        min_array = all_sol[0]
+        min_cost = len(min_array[0]) + len(min_array[1]) + len(min_array[2])
 
-            cornerStr = "".join(str(x) for x in cornerStr)
-            edgeStr = "".join(str(x) for x in edgeStr)
+        for i in range(1, len(all_sol)):
+            cost = len(all_sol[i][0]) + len(all_sol[i][1]) + len(all_sol[i][2])
+            if cost < min_cost:
+                min_cost = cost
+                min_index = i
 
-            if (cornerStr, edgeStr, str(cube.co), str(cube.cp), str(cube.eo), str(cube.ep)) in sol_heur:
-                f2l_sol.append(sol_heur[(cornerStr, edgeStr, str(cube.co), str(cube.cp), str(cube.eo), str(cube.ep))])
-                continue
-
-            solver = IDA_star(corners, edges, cornerStr, edgeStr)
-            start_time = time.time()
-            moves = solver.run(cube)
-
-            f2l_sol.append(moves)
-            end_time = time.time()
-
-            print("Execution time:", end_time - start_time, "seconds")
-
-            sol_heur[(cornerStr, edgeStr, str(cube.co), str(cube.cp), str(cube.eo), str(cube.ep))] = moves
-        print("Scramble:", scramble)
-
-        print("Cross solution:" , cross_sol)
-
-
-        for alg in f2l_sol:
+        print("Min cost:", min_cost)
+        print("Min index:", min_index)
+        print("SHorteest solution:")
+        for alg in all_sol[min_index]:
             for move in alg:
                 print(ACTIONS[move], end=" ")
             print()
-        all_sol.append(f2l_sol)
 
-    end_time_main = time.time()
-    print("Execution time:", end_time_main - start_time_main, "seconds")
-    print("All solutions:", all_sol)
-
-    min_index = 0
-    min_array = all_sol[0]
-    min_cost = len(min_array[0]) + len(min_array[1]) + len(min_array[2])
-
-    for i in range(1, len(all_sol)):
-        cost = len(all_sol[i][0]) + len(all_sol[i][1]) + len(all_sol[i][2])
-        if cost < min_cost:
-            min_cost = cost
-            min_index = i
-
-    print("Min cost:", min_cost)
-    print("Min index:", min_index)
-    print("SHorteest solution:")
-    for alg in all_sol[min_index]:
-        for move in alg:
-            print(ACTIONS[move], end=" ")
-        print()
+    stats = pstats.Stats(pr)
+    stats.sort_stats(pstats.SortKey.TIME)
+    stats.print_stats()
 
     # with cProfile.Profile() as pr:
     # corners = [Corner.URF, Corner.UFL, Corner.ULB, Corner.UBR]

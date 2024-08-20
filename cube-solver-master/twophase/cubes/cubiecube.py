@@ -551,8 +551,8 @@ _edges = [
 _edgesCross_set = set([Edge.UF, Edge.UR, Edge.UL, Edge.UB])
 
 class CubieCube:
-    def __init__(self, corners=None, edges=None, cp=None, co=None, ep=None, eo=None, epc=None, eoc=None, epf=None, eof=None):
-        if corners and edges and cp and co and ep and eo and epc and eoc and epf and eof:
+    def __init__(self, corners=None, edges=None, cp=None, co=None, ep=None, eo=None, epc=None, eoc=None, epf=None, eof=None, cpf=None, cof=None):
+        if corners and edges and cp and co and ep and eo and epc and eoc and epf and eof and cpf and cof:
             self.cp = cp
             self.co = co
             self.ep = ep
@@ -563,23 +563,36 @@ class CubieCube:
             self.eof = eof
             self.corners = corners
             self.edges = edges
+            self.cpf = cpf
+            self.cof = cof
         else:
+            self.cp = [
+                Corner.URF,
+                Corner.UFL,
+                Corner.ULB,
+                Corner.UBR,
+                Corner.DFR,
+                Corner.DLF,
+                Corner.DBL,
+                Corner.DRB
+            ]
+            self.co = [0,0,0,0,0,0,0,0]
             if corners:
-                self.cp = [_corners[i] if(_corners[i] in corners) else -1 for i in range(8)]
-                self.co = [0 if _corners[i] in corners else -1 for i in range(8)]
+                self.cpf = [_corners[i] if(_corners[i] in corners) else -1 for i in range(8)]
+                self.cof = [0 if _corners[i] in corners else -1 for i in range(8)]
                 self.corners = corners[:]
             else:
-                self.cp = [
+                self.cpf = [
                     Corner.URF,
                     Corner.UFL,
                     Corner.ULB,
                     Corner.UBR,
-                    Corner.DFR,
-                    Corner.DLF,
-                    Corner.DBL,
-                    Corner.DRB,
+                    -1,
+                    -1,
+                    -1,
+                    -1
                 ]
-                self.co = [0, 0, 0, 0, 0, 0, 0, 0]
+                self.cof = [0, 0, 0, 0, -1, -1, -1, -1]
                 self.corners = [Corner.URF, Corner.UFL, Corner.ULB, Corner.UBR]
 
             self.ep = [
@@ -637,39 +650,48 @@ class CubieCube:
 
 
     def __deepcopy__(self, memodict={}):
-        copy_object = CubieCube(self.corners, self.edges, self.cp, self.co, self.ep, self.eo, self.epc, self.eoc, self.epf, self.eof)
+        copy_object = CubieCube(self.corners, self.edges, self.cp, self.co, self.ep, self.eo, self.epc, self.eoc, self.epf, self.eof, self.cpf, self.cof)
 
         return copy_object
 
-    def to_facecube(self):
-        """
-        Convert CubieCube to FaceCube.
-        """
-        ret = facecube.FaceCube()
-        for i in range(8):
-            j = self.cp[i]
-            ori = self.co[i]
-            for k in range(3):
-                ret.f[
-                    facecube.corner_facelet[i][(k + ori) % 3]
-                ] = facecube.corner_color[j][k]
-        for i in range(12):
-            j = self.ep[i]
-            ori = self.eo[i]
-            for k in range(2):
-                facelet_index = facecube.edge_facelet[i][(k + ori) % 2]
-                ret.f[facelet_index] = facecube.edge_color[j][k]
-        return ret
-
     def corner_multiply(self, b):
-        corner_perm = [self.cp[b.cp[i]] for i in range(8)]
+        corner_perm = [0,0,0,0,0,0,0,0]
+        corner_ori = [0,0,0,0,0,0,0,0]
+
+        for i in range(8):
+            corner_perm[i]=(self.cp[b.cp[i]])
+            corner_ori[i]=((self.co[b.cp[i]] + b.co[i]) % 3)
+
         self.cp = corner_perm
-        corner_ori = [(self.co[b.cp[i]] + b.co[i]) % 3 if(self.cp[i] != -1) else -1 for i in range(8)]
         self.co = corner_ori
 
+        corner_f2l_perm = [-1, -1, -1, -1, -1, -1, -1, -1]
+        corner_f2l_ori = [-1, -1, -1, -1, -1, -1, -1, -1]
+
+        f2l_i = 0
+
+        for i in range(8):
+            if f2l_i == len(self.corners):
+                break
+
+            cp_i = corner_perm[i]
+            co_i = corner_ori[i]
+
+            if cp_i in self.corners:
+                corner_f2l_perm[i] = cp_i
+                corner_f2l_ori[i] = co_i
+                f2l_i += 1
+
+        self.cof = corner_f2l_ori
+        self.cpf = corner_f2l_perm
+
     def edge_multiply(self, b):
-        edge_perm = [self.ep[b.ep[i]] for i in range(12)]
-        edge_ori = [(self.eo[b.ep[i]] + b.eo[i]) % 2 for i in range(12)]
+        edge_perm = [0,0,0,0,0,0,0,0,0,0,0,0]
+        edge_ori = [0,0,0,0,0,0,0,0,0,0,0,0]
+
+        for i in range(12):
+            edge_perm[i]=(self.ep[b.ep[i]])
+            edge_ori[i]=((self.eo[b.ep[i]] + b.eo[i]) % 2)
 
         self.eo = edge_ori
         self.ep = edge_perm
