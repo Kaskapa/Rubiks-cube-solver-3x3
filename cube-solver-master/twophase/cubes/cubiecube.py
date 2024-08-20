@@ -1,4 +1,5 @@
 from ..pieces import Corner, Edge
+from . import facecube
 
 _cpU = (
     Corner.UBR,
@@ -639,6 +640,26 @@ class CubieCube:
         copy_object = CubieCube(self.corners, self.edges, self.cp, self.co, self.ep, self.eo, self.epc, self.eoc, self.epf, self.eof)
 
         return copy_object
+
+    def to_facecube(self):
+        """
+        Convert CubieCube to FaceCube.
+        """
+        ret = facecube.FaceCube()
+        for i in range(8):
+            j = self.cp[i]
+            ori = self.co[i]
+            for k in range(3):
+                ret.f[
+                    facecube.corner_facelet[i][(k + ori) % 3]
+                ] = facecube.corner_color[j][k]
+        for i in range(12):
+            j = self.ep[i]
+            ori = self.eo[i]
+            for k in range(2):
+                facelet_index = facecube.edge_facelet[i][(k + ori) % 2]
+                ret.f[facelet_index] = facecube.edge_color[j][k]
+        return ret
 
     def corner_multiply(self, b):
         corner_perm = [self.cp[b.cp[i]] for i in range(8)]

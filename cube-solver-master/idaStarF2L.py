@@ -313,9 +313,9 @@ if __name__ == "__main__":
             print(ACTIONS[move], end=" ")
         print()
 
-    # # with cProfile.Profile() as pr:
-    # corners = [Corner.URF]
-    # edges = [Edge.FR]
+    # with cProfile.Profile() as pr:
+    # corners = [Corner.URF, Corner.UFL, Corner.ULB, Corner.UBR]
+    # edges = [Edge.FR, Edge.FL, Edge.BL, Edge.BR]
 
     # cornerStr = [corner.value for corner in corners]
     # edgeStr = [edge.value for edge in edges]
@@ -341,7 +341,7 @@ if __name__ == "__main__":
     # end_time = time.time()
     # execution_time = end_time - start_time
     # print("Execution time:", execution_time, "seconds")
-    # # stats = pstats.Stats(pr)
-    # # stats.sort_stats(pstats.SortKey.TIME)
-    # # stats.print_stats()
+    # stats = pstats.Stats(pr)
+    # stats.sort_stats(pstats.SortKey.TIME)
+    # stats.print_stats()
 
