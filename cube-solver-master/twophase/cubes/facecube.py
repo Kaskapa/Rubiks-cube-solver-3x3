@@ -1,5 +1,4 @@
 from ..pieces import Color, Facelet
-from . import cubiecube
 
 # Maps corner positions to facelet positions
 corner_facelet = (
@@ -59,15 +58,27 @@ edge_color = (
 
 
 class FaceCube:
-    def __init__(self, cube_string="".join(c * 9 for c in "URFDLB")):
-        """
-        Initialise FaceCube from cube_string, if cube_string is not provided we
-        initialise a clean cube.
-        """
-        self.f = [0] * 54
-        for i in range(54):
-            self.f[i] = Color[cube_string[i]]
-
+    def __init__(self):
+        self.f = [
+            Color.U, Color.U, Color.U,
+            Color.U, Color.U, Color.U,
+            Color.U, Color.U, Color.U,
+            Color.R, Color.R, Color.R,
+            Color.R, Color.R, Color.R,
+            Color.R, Color.R, Color.R,
+            Color.F, Color.F, Color.F,
+            Color.F, Color.F, Color.F,
+            Color.F, Color.F, Color.F,
+            Color.D, Color.D, Color.D,
+            Color.D, Color.D, Color.D,
+            Color.D, Color.D, Color.D,
+            Color.L, Color.L, Color.L,
+            Color.L, Color.L, Color.L,
+            Color.L, Color.L, Color.L,
+            Color.B, Color.B, Color.B,
+            Color.B, Color.B, Color.B,
+            Color.B, Color.B, Color.B
+        ]
     def to_string(self):
         """Convert facecube to cubestring"""
         return "".join(Color(i).name for i in self.f)

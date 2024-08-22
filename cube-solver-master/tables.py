@@ -1,4 +1,5 @@
 import pickle
+from twophase.cubes import cubiecube
 
 class TableLoader():
     def __init__(self):
@@ -41,6 +42,9 @@ class TableLoader():
         self.heurUFR_UFL_UBR_ULB = self.loadHeuristic("heuristics/heuristicsCorner_0_1_3_2.pickle")
         self.heurFR_FL_BR_BL = self.loadHeuristic("heuristics/heuristicsEdge_8_9_11_10.pickle")
 
+        self.heurCornerOLL = self.loadHeuristic("heuristics/heuristicsCornerOLL.pickle")
+        self.heurEdgeOLL = self.loadHeuristic("heuristics/heuristicsEdgeOLL.pickle")
+
         self.all_heur = {
             "0" : self.heurURF,
             "1" : self.heurUFL,
@@ -71,7 +75,7 @@ class TableLoader():
             "91011" : self.heurBR_FL_BL,
             "81011" : self.heurBR_BL_FR,
             "891011": self.heurFR_FL_BR_BL,
-            "0123" : self.heurUFR_UFL_UBR_ULB,
+            "0123" : self.heurUFR_UFL_UBR_ULB
         }
 
     def loadHeuristic(self, filename):

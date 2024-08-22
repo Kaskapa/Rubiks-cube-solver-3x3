@@ -118,7 +118,7 @@ def do_algorithm(algorithm, cube):
         cube = actionsWithNotations(move, cube)
     return cube
 
-class IDA_star(object):
+class IDA_star_F2L(object):
     def __init__(self, corners, edges, cornerStr, edgeStr, max_depth=100):
         self.max_depth = max_depth
         self.moves = []
@@ -197,31 +197,28 @@ class IDA_star(object):
         stateCross = (*cube.epc, *cube.eoc)
         stateCorner = (*cube.cpf, *cube.cof)
 
-        h_corner = h_cross = h_edge = 5  # Initialize with default value
+        h_corner = h_cross = h_edge = 5
 
-        # Check corner heuristic
         try:
             h_corner = self.cornerHeur[stateCorner]
         except KeyError:
-            pass  # h_corner remains 5
+            pass
 
-        # Check edge heuristic
         try:
             h_edge = self.edgeHeur[stateEdge]
         except KeyError:
-            pass  # h_edge remains 5
+            pass
 
-        # Check cross heuristic
         try:
             h_cross = self.crossHeur[stateCross] - 1
         except KeyError:
-            pass  # h_cross remains 5
+            pass
 
         h_value = h_corner + h_cross + h_edge
 
         return h_value
 
-
+#Demo
 if __name__ == "__main__":
     scramble = input("Enter scramble: ")
 
@@ -244,86 +241,78 @@ if __name__ == "__main__":
     all_sol = []
     sol_heur = {}
 
-    import cProfile
-    import pstats
-
     start_time_main = time.time()
-    with cProfile.Profile() as pr:
-        for j in range(len(f2l_corners_combinations)):
-            f2l_sol = []
-            f2l_corners = f2l_corners_combinations[j]
-            f2l_edges= f2l_edges_combinations[j]
-            for i, corner in enumerate(f2l_corners):
-                corners = f2l_corners[:i+1]
-                edges = f2l_edges[:i+1]
+    for j in range(len(f2l_corners_combinations)):
+        f2l_sol = []
+        f2l_corners = f2l_corners_combinations[j]
+        f2l_edges= f2l_edges_combinations[j]
+        for i, corner in enumerate(f2l_corners):
+            corners = f2l_corners[:i+1]
+            edges = f2l_edges[:i+1]
 
-                cube = cubiecube.CubieCube(corners=corners, edges=edges)
-                cube = do_algorithm(scramble, cube)
-                cube = do_algorithm(cross_sol, cube)
-
-                for alg in f2l_sol:
-                    for move in alg:
-                        cube.move(move)
-
-                cornerStr = [corner.value for corner in corners]
-                edgeStr = [edge.value for edge in edges]
-
-                cornerStr.sort()
-                edgeStr.sort()
-
-                cornerStr = "".join(str(x) for x in cornerStr)
-                edgeStr = "".join(str(x) for x in edgeStr)
-
-                if (cornerStr, edgeStr, str(cube.cof), str(cube.cpf), str(cube.eo), str(cube.ep)) in sol_heur:
-                    f2l_sol.append(sol_heur[(cornerStr, edgeStr, str(cube.cof), str(cube.cpf), str(cube.eo), str(cube.ep))])
-                    continue
-
-                solver = IDA_star(corners, edges, cornerStr, edgeStr)
-                start_time = time.time()
-                moves = solver.run(cube)
-
-                f2l_sol.append(moves)
-                end_time = time.time()
-
-                print("Execution time:", end_time - start_time, "seconds")
-
-                sol_heur[(cornerStr, edgeStr, str(cube.cof), str(cube.cpf), str(cube.eo), str(cube.ep))] = moves
-            print("Scramble:", scramble)
-
-            print("Cross solution:" , cross_sol)
-
+            cube = cubiecube.CubieCube(corners=corners, edges=edges)
+            cube = do_algorithm(scramble, cube)
+            cube = do_algorithm(cross_sol, cube)
 
             for alg in f2l_sol:
                 for move in alg:
-                    print(ACTIONS[move], end=" ")
-                print()
-            all_sol.append(f2l_sol)
+                    cube.move(move)
 
-        end_time_main = time.time()
-        print("Execution time:", end_time_main - start_time_main, "seconds")
-        print("All solutions:", all_sol)
+            cornerStr = [corner.value for corner in corners]
+            edgeStr = [edge.value for edge in edges]
 
-        min_index = 0
-        min_array = all_sol[0]
-        min_cost = len(min_array[0]) + len(min_array[1]) + len(min_array[2])
+            cornerStr.sort()
+            edgeStr.sort()
 
-        for i in range(1, len(all_sol)):
-            cost = len(all_sol[i][0]) + len(all_sol[i][1]) + len(all_sol[i][2])
-            if cost < min_cost:
-                min_cost = cost
-                min_index = i
+            cornerStr = "".join(str(x) for x in cornerStr)
+            edgeStr = "".join(str(x) for x in edgeStr)
 
-        print("Min cost:", min_cost)
-        print("Min index:", min_index)
-        print("SHorteest solution:")
-        for alg in all_sol[min_index]:
+            if (cornerStr, edgeStr, str(cube.cof), str(cube.cpf), str(cube.eo), str(cube.ep)) in sol_heur:
+                f2l_sol.append(sol_heur[(cornerStr, edgeStr, str(cube.cof), str(cube.cpf), str(cube.eo), str(cube.ep))])
+                continue
+
+            solver = IDA_star_F2L(corners, edges, cornerStr, edgeStr)
+            start_time = time.time()
+            moves = solver.run(cube)
+
+            f2l_sol.append(moves)
+            end_time = time.time()
+
+            print("Execution time:", end_time - start_time, "seconds")
+
+            sol_heur[(cornerStr, edgeStr, str(cube.cof), str(cube.cpf), str(cube.eo), str(cube.ep))] = moves
+        print("Scramble:", scramble)
+
+        print("Cross solution:" , cross_sol)
+
+
+        for alg in f2l_sol:
             for move in alg:
                 print(ACTIONS[move], end=" ")
             print()
+        all_sol.append(f2l_sol)
 
-    stats = pstats.Stats(pr)
-    stats.sort_stats(pstats.SortKey.TIME)
-    stats.print_stats()
+    end_time_main = time.time()
+    print("Execution time:", end_time_main - start_time_main, "seconds")
+    print("All solutions:", all_sol)
+
+    min_index = 0
+    min_array = all_sol[0]
+    min_cost = len(min_array[0]) + len(min_array[1]) + len(min_array[2])
+
+    for i in range(1, len(all_sol)):
+        cost = len(all_sol[i][0]) + len(all_sol[i][1]) + len(all_sol[i][2])
+        if cost < min_cost:
+            min_cost = cost
+            min_index = i
+
+    print("Min cost:", min_cost)
+    print("Min index:", min_index)
+    print("SHorteest solution:")
+    for alg in all_sol[min_index]:
+        for move in alg:
+            print(ACTIONS[move], end=" ")
+        print()
 
     # with cProfile.Profile() as pr:
     # corners = [Corner.URF, Corner.UFL, Corner.ULB, Corner.UBR]

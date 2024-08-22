@@ -1,4 +1,4 @@
-from ..pieces import Corner, Edge
+from ..pieces import Corner, Edge, Color
 from . import facecube
 
 _cpU = (
@@ -732,7 +732,23 @@ class CubieCube:
         self.corner_multiply(b)
         self.edge_multiply(b)
 
-
+    def to_facecube(self):
+        face = "------------------------------------------------------"
+        for i in range(8):
+            j = self.cp[i]
+            ori = self.co[i]
+            for k in range(3):
+                if(facecube.corner_color[j][k] == Color.D):
+                    index = facecube.corner_facelet[i][(k + ori) % 3]
+                    face= face[:index] + facecube.corner_color[j][k].name + face[index + 1:]
+        for i in range(12):
+            j = self.ep[i]
+            ori = self.eo[i]
+            for k in range(2):
+                if(facecube.edge_color[j][k] == Color.D):
+                    index = facecube.edge_facelet[i][(k + ori) % 2]
+                    face = face[:index] + facecube.edge_color[j][k].name + face[index + 1:]
+        return face
 
 # we store the six possible clockwise 1/4 turn moves in the following array.
 MOVE_CUBE = [CubieCube() for i in range(18)]
