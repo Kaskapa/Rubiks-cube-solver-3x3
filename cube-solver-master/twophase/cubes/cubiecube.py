@@ -734,18 +734,26 @@ class CubieCube:
 
     def to_facecube(self):
         face = "------------------------------------------------------"
+        index_d = 0
         for i in range(8):
+            if index_d == 4:
+                break
             j = self.cp[i]
             ori = self.co[i]
             for k in range(3):
                 if(facecube.corner_color[j][k] == Color.D):
+                    index_d += 1;
                     index = facecube.corner_facelet[i][(k + ori) % 3]
                     face= face[:index] + facecube.corner_color[j][k].name + face[index + 1:]
+        index_d = 0
         for i in range(12):
+            if index_d == 4:
+                break
             j = self.ep[i]
             ori = self.eo[i]
             for k in range(2):
                 if(facecube.edge_color[j][k] == Color.D):
+                    index_d += 1
                     index = facecube.edge_facelet[i][(k + ori) % 2]
                     face = face[:index] + facecube.edge_color[j][k].name + face[index + 1:]
         return face

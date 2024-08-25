@@ -5,6 +5,7 @@ from tables import TableLoader
 from itertools import permutations
 from idaStarCross import IDA_star_cross
 from idaStarF2L import IDA_star_F2L
+from collections import OrderedDict
 
 tableLoader = TableLoader()
 
@@ -124,31 +125,57 @@ def do_algorithm(algorithm, cube):
 
 def to_facecube_state_corner(cube):
     ret = "------------------------------------------------------"
+    index_d=0
     for i in range(8):
+        if index_d == 4:
+            break
         j = cube.cp[i]
         ori = cube.co[i]
         for k in range(3):
             if(facecube.corner_color[j][k] == Color.D):
+                index_d += 1
                 index = facecube.corner_facelet[i][(k + ori) % 3]
                 ret= ret[:index] + facecube.corner_color[j][k].name + ret[index + 1:]
     return ret
 
 def to_facecube_state_edge(cube):
     ret = "------------------------------------------------------"
+    index_d=0
     for i in range(12):
+        if index_d == 4:
+            break
         j = cube.ep[i]
         ori = cube.eo[i]
         for k in range(2):
             if(facecube.edge_color[j][k] == Color.D):
+                index_d += 1
                 index = facecube.edge_facelet[i][(k + ori) % 2]
                 ret = ret[:index] + facecube.edge_color[j][k].name + ret[index + 1:]
     return ret
 
+class TranspositionTable:
+    def __init__(self, max_size=10**6):
+        self.max_size = max_size
+        self.table = OrderedDict()
+
+    def get(self, key):
+        if key in self.table:
+            value = self.table[key]
+            self.table.move_to_end(key)
+            return value
+        return None
+
+    def put(self, key, value):
+        if key in self.table:
+            self.table.move_to_end(key)
+        elif len(self.table) >= self.max_size:
+            self.table.popitem(last=False)
+        self.table[key] = value
+
 class IDA_star(object):
-    def __init__(self, max_depth=100):
+    def __init__(self, max_depth=100, table_size=10**6):
         self.max_depth = max_depth
         self.moves = []
-        self.transposition_table = {}
         cubeCheck = cubiecube.CubieCube()
         self.goal_cross_stete = tuple(cubeCheck.epc + cubeCheck.eoc)
         self.goal_edge_state = tuple(cubeCheck.epf + cubeCheck.eof)
@@ -158,13 +185,17 @@ class IDA_star(object):
         self.crossHeur = tableLoader.heurCross
         self.edgeOLLHeur = tableLoader.heurEdgeOLL
         self.cornerOLLHeur = tableLoader.heurCornerOLL
+        self.transposition_table = TranspositionTable(max_size=table_size)
+
+    def cube_to_key(self, cube):
+        return hash((tuple(cube.cp), tuple(cube.ep), tuple(cube.to_facecube())))
 
     def run(self, cube):
         threshold = self.heuristic_value(cube)
         while threshold <= self.max_depth:
             print("Threshold:", threshold)
             self.moves = []
-            self.transposition_table = {}
+            self.transposition_table = TranspositionTable(max_size=10**6)
             distance = self.search(cube, 0, threshold)
             if distance == True:
                 print("Solution found")
@@ -175,20 +206,22 @@ class IDA_star(object):
         return None
 
     def search(self, cube, g_score, threshold):
-        cube_state = self.get_cube_state(cube)
+        cube_key = self.cube_to_key(cube)
+        tt_entry = self.transposition_table.get(cube_key)
 
-        if cube_state in self.transposition_table:
-            stored_g_score, stored_result = self.transposition_table[cube_state]
+        if tt_entry is not None:
+            stored_g_score = tt_entry['g_score']
+            stored_f_score = tt_entry['f_score']
             if stored_g_score <= g_score:
-                return stored_result
+                return stored_f_score
 
         f_score = g_score + self.heuristic_value(cube)
         if f_score > threshold:
-            self.transposition_table[cube_state] = (g_score, f_score)
+            self.transposition_table.put(cube_key, {'g_score': g_score, 'f_score': f_score})
             return f_score
 
         if is_goal_state(tuple(cube.epc + cube.eoc), tuple(cube.epf + cube.eof), tuple(cube.cpf + cube.cof), to_facecube_state_edge(cube), to_facecube_state_corner(cube), self.goal_cross_stete, self.goal_edge_state, self.goal_corner_state) == True:
-            self.transposition_table[cube_state] = (g_score, True)
+            self.transposition_table.put(cube_key, {'g_score': g_score, 'f_score': True})
             return True
 
         min_cost = float('inf')
@@ -210,13 +243,8 @@ class IDA_star(object):
                 min_cost = distance
             self.moves.pop()
 
-        self.transposition_table[cube_state] = (g_score, min_cost)
+        self.transposition_table.put(cube_key, {'g_score': g_score, 'f_score': min_cost})
         return min_cost
-
-    def get_cube_state(self, cube):
-        return (
-            *cube.cpf, *cube.epf, *cube.to_facecube()
-        )
 
     def heuristic_value(self, cube):
         stateEdge = (*cube.epf, *cube.eof)
@@ -259,7 +287,7 @@ class IDA_star(object):
 
         # The overall heuristic is the sum of the F2L heuristic and the OLL heuristic
         h_value = h_f2l + h_oll
-        return h_value-5
+        return h_value
 
 
 import cProfile
@@ -267,46 +295,11 @@ import pstats
 
 if __name__ == "__main__":
     with cProfile.Profile() as pr:
-        # cube = cubiecube.CubieCube()
-        # scramble = "F R2 U L' D B' D2 R' U' L' B2 U2 L2 F' D2 R F' U R2 B2 L"
-        # cube = do_algorithm(scramble, cube)
-
-        # crossSolver = IDA_star_cross()
-        # crossSolution = crossSolver.run(cube)
-
-        # crossSolutionString = ""
-        # for move in crossSolution:
-        #     crossSolutionString += ACTIONS[move] + " "
-
-        # print("Cross solution:", crossSolutionString)
-        # f2lSolutionString = "U2 L' D F2 L' F2 L2 U2 U B D2 B' D U' D B' D2 B2 D B' D B' D2 B D' B' D' B"
-
-        # print("F2L solution:", f2lSolutionString)
-
-        # cube = cubiecube.CubieCube()
-        # cube = do_algorithm(scramble, cube)
-        # cube = do_algorithm(crossSolutionString, cube)
-        # cube = do_algorithm(f2lSolutionString, cube)
-
-        # solver = IDA_star();
-        # start_time = time.time()
-        # moves = solver.run(cube)
-
-        # for move in moves:
-        #     print(ACTIONS[move], end=" ")
-        # print()
-
-        # end_time = time.time()
-        # execution_time = end_time - start_time
-        # print("Execution time:", execution_time, "seconds")
-
-
         cube = cubiecube.CubieCube()
-        # F (R U R' U') (R U R' U') F'
         # scramble = "F L D L' D' L D L' D' F'"
-        # scramble = "L D L' D L D' L' D L D2 L'"
+        scramble = "L D L' D L D' L' D L D2 L'"
         # scramble = "F D2 F L' F' L D L D L' D F'"
-        scramble = "F L' F' L D2 F L' F' L2 D2 L'"
+        # scramble = "F L' F' L D2 F L' F' L2 D2 L'"
         # scramble = "F D L D' L' F'"
         cube = do_algorithm(scramble, cube)
 
