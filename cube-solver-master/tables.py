@@ -82,6 +82,11 @@ class TableLoader():
         with open(filename, 'rb') as file:
             return pickle.load(file)
 
+    def heuristicToCSV(self, heuristic, filename):
+        with open(filename, 'w') as file:
+            for key in heuristic:
+                file.write(str(key) + ";" + str(heuristic[key]) + "\n")
+
     def checkHeuristics(self):
         print("UBR", len(self.heurUBR))
         print("ULB", len(self.heurULB))

@@ -294,28 +294,22 @@ import cProfile
 import pstats
 
 if __name__ == "__main__":
-    with cProfile.Profile() as pr:
-        cube = cubiecube.CubieCube()
-        # scramble = "F L D L' D' L D L' D' F'"
-        scramble = "L D L' D L D' L' D L D2 L'"
-        # scramble = "F D2 F L' F' L D L D L' D F'"
-        # scramble = "F L' F' L D2 F L' F' L2 D2 L'"
-        # scramble = "F D L D' L' F'"
-        cube = do_algorithm(scramble, cube)
+    cube = cubiecube.CubieCube()
+    # scramble = "F L D L' D' L D L' D' F'"
+    scramble = "L D L' D L D' L' D L D2 L'"
+    # scramble = "F D2 F L' F' L D L D L' D F'"
+    # scramble = "F L' F' L D2 F L' F' L2 D2 L'"
+    # scramble = "F D L D' L' F'"
+    cube = do_algorithm(scramble, cube)
 
-        solver = IDA_star();
-        start_time = time.time()
-        moves = solver.run(cube)
+    solver = IDA_star();
+    start_time = time.time()
+    moves = solver.run(cube)
 
-        for move in moves:
-            print(ACTIONS[move], end=" ")
-        print()
-        end_time = time.time()
-        execution_time = end_time - start_time
-        print("Execution time:", execution_time, "seconds")
-
-
-    stats = pstats.Stats(pr)
-    stats.sort_stats(pstats.SortKey.TIME)
-    stats.print_stats()
+    for move in moves:
+        print(ACTIONS[move], end=" ")
+    print()
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print("Execution time:", execution_time, "seconds")
 

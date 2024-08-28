@@ -648,7 +648,6 @@ class CubieCube:
                 self.eof = [-1,-1,-1,-1,-1,-1,-1,-1,0,0,0,0]
                 self.edges = [Edge.BL, Edge.BR, Edge.FR, Edge.FL]
 
-
     def __deepcopy__(self, memodict={}):
         copy_object = CubieCube(self.corners, self.edges, self.cp, self.co, self.ep, self.eo, self.epc, self.eoc, self.epf, self.eof, self.cpf, self.cof)
 
@@ -758,7 +757,6 @@ class CubieCube:
                     face = face[:index] + facecube.edge_color[j][k].name + face[index + 1:]
         return face
 
-# we store the six possible clockwise 1/4 turn moves in the following array.
 MOVE_CUBE = [CubieCube() for i in range(18)]
 
 MOVE_CUBE[0].cp = _cpU

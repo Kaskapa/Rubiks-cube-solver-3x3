@@ -4,38 +4,9 @@ import time
 import random
 from tables import TableLoader
 
-cube = cubiecube.CubieCube()
-cube.move(0)
-cube.move(18)
-cube.move(4)
-cube.move(1)
-cube.move(1)
-cube.move(1)
+table = TableLoader()
 
-cube.move(18)
-cube.move(4)
-cube.move(1)
-cube.move(1)
-cube.move(1)
-cube.move(3)
-cube.move(3)
-cube.move(3)
-
-cube.move(18)
-cube.move(4)
-cube.move(1)
-cube.move(1)
-cube.move(1)
-cube.move(18)
-cube.move(4)
-cube.move(1)
-cube.move(1)
-cube.move(1)
-
-print(cube.cp)
-print(cube.co)
-print(cube.ep)
-print(cube.eo)
+table.heuristicToCSV(table.heurEdgeOLL, "heuristicsJsonEdgeOLL.csv")
 
 # def to_facecube_state_corner(cube):
 #     ret = "-------------------------------------------------"
