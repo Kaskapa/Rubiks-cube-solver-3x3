@@ -226,22 +226,23 @@ class IDA_star(object):
 
         min_cost = float('inf')
         for action in range(18):
-            cube_copy = cube.__deepcopy__()
-            cube_copy.move(action)
+            if action == 2 or action == 3 or action == 4 or action == 8 or action == 9 or action == 10 or action == 14 or action == 15 or action == 16:
+                cube_copy = cube.__deepcopy__()
+                cube_copy.move(action)
 
-            if len(self.moves) > 0 and action in REDUNDANT_ACTIONS[self.moves[-1]]:
-                continue
+                if len(self.moves) > 0 and action in REDUNDANT_ACTIONS[self.moves[-1]]:
+                    continue
 
-            if len(self.moves) > 1 and action in REDUNDANT_ACTIONS_2[self.moves[-1]] and action in REDUNDANT_ACTIONS[self.moves[-2]]:
-                continue
+                if len(self.moves) > 1 and action in REDUNDANT_ACTIONS_2[self.moves[-1]] and action in REDUNDANT_ACTIONS[self.moves[-2]]:
+                    continue
 
-            self.moves.append(action)
-            distance = self.search(cube_copy, g_score + 1, threshold)
-            if distance == True:
-                return True
-            if distance < min_cost:
-                min_cost = distance
-            self.moves.pop()
+                self.moves.append(action)
+                distance = self.search(cube_copy, g_score + 1, threshold)
+                if distance == True:
+                    return True
+                if distance < min_cost:
+                    min_cost = distance
+                self.moves.pop()
 
         self.transposition_table.put(cube_key, {'g_score': g_score, 'f_score': min_cost})
         return min_cost
@@ -289,18 +290,89 @@ class IDA_star(object):
         h_value = h_f2l + h_oll
         return h_value
 
-
-import cProfile
-import pstats
-
 if __name__ == "__main__":
+    scramble = input("Enter scramble: ")
     cube = cubiecube.CubieCube()
-    # scramble = "F L D L' D' L D L' D' F'"
-    scramble = "L D L' D L D' L' D L D2 L'"
-    # scramble = "F D2 F L' F' L D L D L' D F'"
-    # scramble = "F L' F' L D2 F L' F' L2 D2 L'"
-    # scramble = "F D L D' L' F'"
     cube = do_algorithm(scramble, cube)
+
+    solver = IDA_star_cross();
+    crossSolution = solver.run(cube)
+
+    for move in crossSolution:
+        print(ACTIONS[move], end=" ")
+    print()
+
+    crossSolution = " ".join([ACTIONS[move] for move in crossSolution])
+
+    f2l_corners = [Corner.URF, Corner.UFL, Corner.ULB, Corner.UBR]
+    f2l_edges = [Edge.FR, Edge.FL, Edge.BL, Edge.BR]
+
+    f2l_corners_combinations = list(permutations(f2l_corners, 4))
+    f2l_edges_combinations = list(permutations(f2l_edges, 4))
+
+    all_sol = []
+    sol_heur = {}
+
+    start_time_main = time.time()
+    f2l_sol = []
+    f2l_corners = f2l_corners_combinations[0]
+    f2l_edges= f2l_edges_combinations[0]
+    for i, corner in enumerate(f2l_corners):
+        corners = f2l_corners[:i+1]
+        edges = f2l_edges[:i+1]
+
+        cube = cubiecube.CubieCube(corners=corners, edges=edges)
+        cube = do_algorithm(scramble, cube)
+        cube = do_algorithm(crossSolution, cube)
+
+        for alg in f2l_sol:
+            for move in alg:
+                cube.move(move)
+
+        cornerStr = [corner.value for corner in corners]
+        edgeStr = [edge.value for edge in edges]
+
+        cornerStr.sort()
+        edgeStr.sort()
+
+        cornerStr = "".join(str(x) for x in cornerStr)
+        edgeStr = "".join(str(x) for x in edgeStr)
+
+        if (cornerStr, edgeStr, str(cube.cof), str(cube.cpf), str(cube.eo), str(cube.ep)) in sol_heur:
+            f2l_sol.append(sol_heur[(cornerStr, edgeStr, str(cube.cof), str(cube.cpf), str(cube.eo), str(cube.ep))])
+            continue
+
+        solver = IDA_star_F2L(corners, edges, cornerStr, edgeStr)
+        start_time = time.time()
+        moves = solver.run(cube)
+
+        f2l_sol.append(moves)
+        end_time = time.time()
+
+        print("Execution time:", end_time - start_time, "seconds")
+
+        sol_heur[(cornerStr, edgeStr, str(cube.cof), str(cube.cpf), str(cube.eo), str(cube.ep))] = moves
+    print("Scramble:", scramble)
+
+    print("Cross solution:" , crossSolution)
+
+    for alg in f2l_sol:
+        for move in alg:
+            print(ACTIONS[move], end=" ")
+        print()
+    all_sol.append(f2l_sol)
+
+    end_time_main = time.time()
+    print("Execution time:", end_time_main - start_time_main, "seconds")
+
+
+    #OLL part
+    cube = cubiecube.CubieCube()
+    cube = do_algorithm(scramble, cube)
+    cube = do_algorithm(crossSolution, cube)
+    for alg in f2l_sol:
+        for move in alg:
+            cube.move(move)
 
     solver = IDA_star();
     start_time = time.time()
@@ -310,6 +382,50 @@ if __name__ == "__main__":
         print(ACTIONS[move], end=" ")
     print()
     end_time = time.time()
-    execution_time = end_time - start_time
-    print("Execution time:", execution_time, "seconds")
 
+    print("Execution time:", end_time - start_time, "seconds")
+
+
+    #Whole solution
+
+    print()
+    print("Scramble:", scramble)
+    print("Cross solution:" , crossSolution)
+    print("F2L solution:")
+    for alg in f2l_sol:
+        for move in alg:
+            print(ACTIONS[move], end=" ")
+        print()
+
+    print("OLL solution:")
+    for move in moves:
+        print(ACTIONS[move], end=" ")
+    print()
+
+
+    # # with cProfile.Profile() as pr:
+    # cube = cubiecube.CubieCube()
+    # # U2 L F' L' F L' U L U' L' U' L U' F U F'
+    # # scramble = "F L D L' D' L D L' D' F'"
+    # # scramble = "L D L' D L D' L' D L D2 L'"
+    # # scramble = "F D2 F L' F' L D L D L' D F'"
+    # # scramble = "F L' F' L D2 F L' F' L2 D2 L'"
+    # # scramble = "F D L D' L' F'"
+    # # scramble = "F D L D' L2 F' L D L D' L'"
+    # scramble = "D2 R F' R' F R' D R D' R' D' R D' F D F'"
+    # cube = do_algorithm(scramble, cube)
+
+    # solver = IDA_star();
+    # start_time = time.time()
+    # moves = solver.run(cube)
+
+    # for move in moves:
+    #     print(ACTIONS[move], end=" ")
+    # print()
+    # end_time = time.time()
+    # execution_time = end_time - start_time
+    # print("Execution time:", execution_time, "seconds")
+
+    # # stats = pstats.Stats(pr)
+    # # stats.sort_stats(pstats.SortKey.TIME)
+    # # stats.print_stats()

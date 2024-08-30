@@ -60,24 +60,12 @@ edge_color = (
 class FaceCube:
     def __init__(self):
         self.f = [
-            Color.U, Color.U, Color.U,
-            Color.U, Color.U, Color.U,
-            Color.U, Color.U, Color.U,
-            Color.R, Color.R, Color.R,
-            Color.R, Color.R, Color.R,
-            Color.R, Color.R, Color.R,
-            Color.F, Color.F, Color.F,
-            Color.F, Color.F, Color.F,
-            Color.F, Color.F, Color.F,
-            Color.D, Color.D, Color.D,
-            Color.D, Color.D, Color.D,
-            Color.D, Color.D, Color.D,
-            Color.L, Color.L, Color.L,
-            Color.L, Color.L, Color.L,
-            Color.L, Color.L, Color.L,
-            Color.B, Color.B, Color.B,
-            Color.B, Color.B, Color.B,
-            Color.B, Color.B, Color.B
+            [Color.U, Color.U, Color.U, Color.U, Color.U, Color.U, Color.U, Color.U, Color.U],
+            [Color.R, Color.R, Color.R, Color.R, Color.R, Color.R, Color.R, Color.R, Color.R],
+            [Color.F, Color.F, Color.F, Color.F, Color.F, Color.F, Color.F, Color.F, Color.F],
+            [Color.D, Color.D, Color.D, Color.D, Color.D, Color.D, Color.D, Color.D, Color.D],
+            [Color.L, Color.L, Color.L, Color.L, Color.L, Color.L, Color.L, Color.L, Color.L],
+            [Color.B, Color.B, Color.B, Color.B, Color.B, Color.B, Color.B, Color.B, Color.B]
         ]
     def to_string(self):
         """Convert facecube to cubestring"""
