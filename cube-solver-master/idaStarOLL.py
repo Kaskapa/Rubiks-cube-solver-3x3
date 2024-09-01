@@ -295,6 +295,8 @@ if __name__ == "__main__":
     cube = cubiecube.CubieCube()
     cube = do_algorithm(scramble, cube)
 
+    main_main_start_time = time.time()
+
     solver = IDA_star_cross();
     crossSolution = solver.run(cube)
 
@@ -385,6 +387,9 @@ if __name__ == "__main__":
 
     print("Execution time:", end_time - start_time, "seconds")
 
+    main_main_end_time = time.time()
+
+    print("Main time Execution time:", main_main_end_time - main_main_start_time, "seconds")
 
     #Whole solution
 
