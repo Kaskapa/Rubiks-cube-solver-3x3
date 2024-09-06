@@ -8,32 +8,10 @@ def build_heuristic_db(cube, edge, array, array2, max_moves=4):
     heuristic = {}
 
     def get_edges(cube):
-        # edgeArray = []
-        # edgeOrientaion = []
-
-        # for i in range(12):
-        #     if cube.ep[i] in edges:
-        #         edgeArray.append(cube.ep[i])
-        #         edgeOrientaion.append(cube.eo[i])
-        #     else:
-        #         edgeArray.append(-1)
-        #         edgeOrientaion.append(-1)
-
         return tuple(cube.epf + cube.eof)
 
     def get_corners(cube):
-        # edgeArray = []
-        # edgeOrientaion = []
-
-        # for i in range(8):
-        #     if cube.cp[i] in corners:
-        #         edgeArray.append(cube.cp[i])
-        #         edgeOrientaion.append(cube.co[i])
-        #     else:
-        #         edgeArray.append(-1)
-        #         edgeOrientaion.append(-1)
-
-        return tuple(cube.cp + cube.co)
+        return tuple(cube.cppll + cube.copll)
 
     current_Depth = 0
 
@@ -53,7 +31,7 @@ def build_heuristic_db(cube, edge, array, array2, max_moves=4):
             print(f"Current depth: {depth}")
             current_Depth = depth
 
-        current_cube = cubiecube.CubieCube(corners=array2, edges=array)
+        current_cube = cubiecube.CubieCube(type=3, corners=array2, edges=array)
         for action in previous_actions:
             current_cube = actions(action, current_cube)
 
@@ -85,7 +63,6 @@ def build_heuristic_db(cube, edge, array, array2, max_moves=4):
     print(f"Heuristic size: {len(heuristic)} {edge}")
 
     arrayToString = ""
-
 
     # Dump the heuristics dictionary into a pickle file
     if(edge == True):
@@ -168,18 +145,18 @@ def actions(action, cube):
 
     return cube
 
-cornerOne = [Corner.URF, Corner.UFL, Corner.UBR, Corner.ULB]
+cornerOne = [Corner.DRB, Corner.DBL, Corner.DFR, Corner.DLF]
 cornerTwo = [Corner.URF, Corner.UFL, Corner.ULB]
 cornerThree = [Corner.UBR, Corner.UFL, Corner.ULB]
 cornerFour = [Corner.UBR, Corner.ULB, Corner.URF]
 
-edgeOne = [Edge.FR, Edge.FL, Edge.BR, Edge.BL]
+edgeOne = [Edge.DR, Edge.DL, Edge.DB, Edge.DF]
 edgeTwo = [Edge.FR, Edge.FL, Edge.BL]
 edgeThree = [Edge.BR, Edge.FL, Edge.BL]
 edgeFour = [Edge.BR, Edge.BL, Edge.FR]
 
-t1 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), True, edgeOne, cornerOne])
-t2 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), False, edgeOne, cornerOne])
+# t1 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(type=3, edges=edgeOne, corners=cornerOne), True, edgeOne, cornerOne])
+t2 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(type=3, edges=edgeOne, corners=cornerOne), False, edgeOne, cornerOne])
 # t3 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), True, edgeThree])
 # t4 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), True, edgeFour])
 # t5 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), False, cornerOne])
@@ -188,7 +165,7 @@ t2 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), Fa
 # t8 = threading.Thread(target=build_heuristic_db, args=[cubiecube.CubieCube(), False, cornerFour])
 
 
-t1.start()
+# t1.start()
 t2.start()
 # t3.start()
 # t4.start()
@@ -197,7 +174,7 @@ t2.start()
 # t7.start()
 # t8.start()
 
-t1.join()
+# t1.join()
 t2.join()
 # t3.join()
 # t4.join()

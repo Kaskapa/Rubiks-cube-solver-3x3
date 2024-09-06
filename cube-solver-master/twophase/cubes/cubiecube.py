@@ -551,37 +551,216 @@ _edges = [
 _edgesCross_set = set([Edge.UF, Edge.UR, Edge.UL, Edge.UB])
 
 class CubieCube:
-    def __init__(self, corners=None, edges=None, cp=None, co=None, ep=None, eo=None, epc=None, eoc=None, epf=None, eof=None, cpf=None, cof=None):
-        if corners and edges and cp and co and ep and eo and epc and eoc and epf and eof and cpf and cof:
-            self.cp = cp
-            self.co = co
-            self.ep = ep
-            self.eo = eo
-            self.epc = epc
-            self.eoc = eoc
-            self.epf = epf
-            self.eof = eof
-            self.corners = corners
-            self.edges = edges
-            self.cpf = cpf
-            self.cof = cof
-        else:
-            self.cp = [
-                Corner.URF,
-                Corner.UFL,
-                Corner.ULB,
-                Corner.UBR,
-                Corner.DFR,
-                Corner.DLF,
-                Corner.DBL,
-                Corner.DRB
-            ]
-            self.co = [0,0,0,0,0,0,0,0]
-            if corners:
-                self.cpf = [_corners[i] if(_corners[i] in corners) else -1 for i in range(8)]
-                self.cof = [0 if _corners[i] in corners else -1 for i in range(8)]
-                self.corners = corners[:]
+    def __init__(self, corners=None, edges=None, cp=None, co=None, ep=None, eo=None, epc=None, eoc=None, epf=None, eof=None, cpf=None, cof=None, cppll=None, copll=None, eppll=None, eopll=None, type=2):
+        self.type = type
+        self.cornersPLL = {Corner.DBL, Corner.DRB, Corner.DFR, Corner.DLF}
+        self.edgesPLL = {Edge.DB, Edge.DR, Edge.DF, Edge.DL}
+        if self.type == 1:
+            if corners and edges and cp and co and ep and eo and epc and eoc:
+                self.cp = cp
+                self.co = co
+                self.ep = ep
+                self.eo = eo
+                self.epc = epc
+                self.eoc = eoc
+                self.corners = corners
+                self.edges = edges
             else:
+                self.cp = [
+                    Corner.URF,
+                    Corner.UFL,
+                    Corner.ULB,
+                    Corner.UBR,
+                    Corner.DFR,
+                    Corner.DLF,
+                    Corner.DBL,
+                    Corner.DRB
+                ]
+                self.co = [0,0,0,0,0,0,0,0]
+                if corners:
+                    self.corners = corners[:]
+                else:
+                    self.corners = [Corner.URF, Corner.UFL, Corner.ULB, Corner.UBR]
+
+                self.ep = [
+                    Edge.UR,
+                    Edge.UF,
+                    Edge.UL,
+                    Edge.UB,
+                    Edge.DR,
+                    Edge.DF,
+                    Edge.DL,
+                    Edge.DB,
+                    Edge.FR,
+                    Edge.FL,
+                    Edge.BL,
+                    Edge.BR,
+                ]
+                self.eo = [0,0,0,0,0,0,0,0,0,0,0,0]
+                self.epc = [
+                    Edge.UR,
+                    Edge.UF,
+                    Edge.UL,
+                    Edge.UB,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                ]
+                self.eoc = [0,0,0,0,-1,-1,-1,-1,-1,-1,-1,-1]
+
+                if edges:
+                    self.edges = edges[:]
+                else:
+                    self.edges = [Edge.BL, Edge.BR, Edge.FR, Edge.FL]
+        if self.type == 2:
+            if corners and edges and cp and co and ep and eo and epc and eoc and epf and eof and cpf and cof:
+                self.cp = cp
+                self.co = co
+                self.ep = ep
+                self.eo = eo
+                self.epc = epc
+                self.eoc = eoc
+                self.epf = epf
+                self.eof = eof
+                self.corners = corners
+                self.edges = edges
+                self.cpf = cpf
+                self.cof = cof
+            else:
+                self.cp = [
+                    Corner.URF,
+                    Corner.UFL,
+                    Corner.ULB,
+                    Corner.UBR,
+                    Corner.DFR,
+                    Corner.DLF,
+                    Corner.DBL,
+                    Corner.DRB
+                ]
+                self.co = [0,0,0,0,0,0,0,0]
+                if corners:
+                    self.cpf = [_corners[i] if(_corners[i] in corners) else -1 for i in range(8)]
+                    self.cof = [0 if _corners[i] in corners else -1 for i in range(8)]
+                    self.corners = corners[:]
+                else:
+                    self.cpf = [
+                        Corner.URF,
+                        Corner.UFL,
+                        Corner.ULB,
+                        Corner.UBR,
+                        -1,
+                        -1,
+                        -1,
+                        -1
+                    ]
+                    self.cof = [0, 0, 0, 0, -1, -1, -1, -1]
+                    self.corners = [Corner.URF, Corner.UFL, Corner.ULB, Corner.UBR]
+
+                self.ep = [
+                    Edge.UR,
+                    Edge.UF,
+                    Edge.UL,
+                    Edge.UB,
+                    Edge.DR,
+                    Edge.DF,
+                    Edge.DL,
+                    Edge.DB,
+                    Edge.FR,
+                    Edge.FL,
+                    Edge.BL,
+                    Edge.BR,
+                ]
+                self.eo = [0,0,0,0,0,0,0,0,0,0,0,0]
+                self.epc = [
+                    Edge.UR,
+                    Edge.UF,
+                    Edge.UL,
+                    Edge.UB,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                ]
+                self.eoc = [0,0,0,0,-1,-1,-1,-1,-1,-1,-1,-1]
+
+                if edges:
+                    self.epf = [_edges[i] if(_edges[i] in edges) else -1 for i in range(12)]
+                    self.eof = [0 if _edges[i] in edges else -1 for i in range(12)]
+                    self.edges = edges[:]
+                else:
+                    self.epf = [
+                        -1,
+                        -1,
+                        -1,
+                        -1,
+                        -1,
+                        -1,
+                        -1,
+                        -1,
+                        Edge.FR,
+                        Edge.FL,
+                        Edge.BL,
+                        Edge.BR,
+                    ]
+                    self.eof = [-1,-1,-1,-1,-1,-1,-1,-1,0,0,0,0]
+                    self.edges = [Edge.BL, Edge.BR, Edge.FR, Edge.FL]
+        if self.type == 3:
+            if corners and edges and cp and co and ep and eo and epc and eoc and epf and eof and cpf and cof and cppll and copll and eppll and eopll:
+                self.cp = cp
+                self.co = co
+                self.ep = ep
+                self.eo = eo
+                self.epc = epc
+                self.eoc = eoc
+                self.epf = epf
+                self.eof = eof
+                self.cpf = cpf
+                self.cof = cof
+                self.cppll = cppll
+                self.copll = copll
+                self.eppll = eppll
+                self.eopll = eopll
+                self.corners = corners
+                self.edges = edges
+
+            else:
+                self.cp = [
+                    Corner.URF,
+                    Corner.UFL,
+                    Corner.ULB,
+                    Corner.UBR,
+                    Corner.DFR,
+                    Corner.DLF,
+                    Corner.DBL,
+                    Corner.DRB
+                ]
+                self.co = [0,0,0,0,0,0,0,0]
+
+                self.corners = [Corner.URF, Corner.UFL, Corner.ULB, Corner.UBR]
+                self.edges = [Edge.FR, Edge.FL, Edge.BL, Edge.BR]
+
+                self.cppll = [
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    Corner.DFR,
+                    Corner.DLF,
+                    Corner.DBL,
+                    Corner.DRB,
+                ]
+
+                self.copll = [-1,-1,-1,-1,0,0,0,0]
+
                 self.cpf = [
                     Corner.URF,
                     Corner.UFL,
@@ -595,42 +774,53 @@ class CubieCube:
                 self.cof = [0, 0, 0, 0, -1, -1, -1, -1]
                 self.corners = [Corner.URF, Corner.UFL, Corner.ULB, Corner.UBR]
 
-            self.ep = [
-                Edge.UR,
-                Edge.UF,
-                Edge.UL,
-                Edge.UB,
-                Edge.DR,
-                Edge.DF,
-                Edge.DL,
-                Edge.DB,
-                Edge.FR,
-                Edge.FL,
-                Edge.BL,
-                Edge.BR,
-            ]
-            self.eo = [0,0,0,0,0,0,0,0,0,0,0,0]
-            self.epc = [
-                Edge.UR,
-                Edge.UF,
-                Edge.UL,
-                Edge.UB,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-            ]
-            self.eoc = [0,0,0,0,-1,-1,-1,-1,-1,-1,-1,-1]
+                self.ep = [
+                    Edge.UR,
+                    Edge.UF,
+                    Edge.UL,
+                    Edge.UB,
+                    Edge.DR,
+                    Edge.DF,
+                    Edge.DL,
+                    Edge.DB,
+                    Edge.FR,
+                    Edge.FL,
+                    Edge.BL,
+                    Edge.BR,
+                ]
+                self.eo = [0,0,0,0,0,0,0,0,0,0,0,0]
+                self.epc = [
+                    Edge.UR,
+                    Edge.UF,
+                    Edge.UL,
+                    Edge.UB,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                ]
+                self.eoc = [0,0,0,0,-1,-1,-1,-1,-1,-1,-1,-1]
 
-            if edges:
-                self.epf = [_edges[i] if(_edges[i] in edges) else -1 for i in range(12)]
-                self.eof = [0 if _edges[i] in edges else -1 for i in range(12)]
-                self.edges = edges[:]
-            else:
+                self.eppll = [
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    Edge.DR,
+                    Edge.DF,
+                    Edge.DL,
+                    Edge.DB,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                ]
+
+                self.eopll = [-1,-1,-1,-1,0,0,0,0,-1,-1,-1,-1]
                 self.epf = [
                     -1,
                     -1,
@@ -649,7 +839,12 @@ class CubieCube:
                 self.edges = [Edge.BL, Edge.BR, Edge.FR, Edge.FL]
 
     def __deepcopy__(self, memodict={}):
-        copy_object = CubieCube(self.corners, self.edges, self.cp, self.co, self.ep, self.eo, self.epc, self.eoc, self.epf, self.eof, self.cpf, self.cof)
+        if self.type == 1:
+            copy_object = CubieCube(self.corners, self.edges, self.cp, self.co, self.ep, self.eo, self.epc, self.eoc, type=1)
+        if self.type == 2:
+            copy_object = CubieCube(self.corners, self.edges, self.cp, self.co, self.ep, self.eo, self.epc, self.eoc, self.epf, self.eof, self.cpf, self.cof, type=2)
+        if self.type == 3:
+            copy_object = CubieCube(corners=self.corners, edges=self.edges, cp=self.cp, co=self.co, ep=self.ep, eo=self.eo, epc=self.epc, eoc=self.eoc, epf=self.epf, eof=self.eof, cpf=self.cpf, cof=self.cof, cppll=self.cppll, copll=self.copll, eppll=self.eppll, eopll=self.eopll, type=3)
 
         return copy_object
 
@@ -664,25 +859,56 @@ class CubieCube:
         self.cp = corner_perm
         self.co = corner_ori
 
-        corner_f2l_perm = [-1, -1, -1, -1, -1, -1, -1, -1]
-        corner_f2l_ori = [-1, -1, -1, -1, -1, -1, -1, -1]
+        if self.type == 2:
+            corner_f2l_perm = [-1, -1, -1, -1, -1, -1, -1, -1]
+            corner_f2l_ori = [-1, -1, -1, -1, -1, -1, -1, -1]
+            f2l_i = 0
 
-        f2l_i = 0
+            for i in range(8):
+                if f2l_i == len(self.corners):
+                    break
 
-        for i in range(8):
-            if f2l_i == len(self.corners):
-                break
+                cp_i = corner_perm[i]
+                co_i = corner_ori[i]
 
-            cp_i = corner_perm[i]
-            co_i = corner_ori[i]
+                if cp_i in self.corners:
+                    corner_f2l_perm[i] = cp_i
+                    corner_f2l_ori[i] = co_i
+                    f2l_i += 1
 
-            if cp_i in self.corners:
-                corner_f2l_perm[i] = cp_i
-                corner_f2l_ori[i] = co_i
-                f2l_i += 1
+            self.cof = corner_f2l_ori
+            self.cpf = corner_f2l_perm
 
-        self.cof = corner_f2l_ori
-        self.cpf = corner_f2l_perm
+        if self.type == 3:
+            corner_f2l_perm = [-1, -1, -1, -1, -1, -1, -1, -1]
+            corner_f2l_ori = [-1, -1, -1, -1, -1, -1, -1, -1]
+            corner_pll_perm = [-1, -1, -1, -1, -1, -1, -1, -1]
+            corner_pll_ori = [-1, -1, -1, -1, -1, -1, -1, -1]
+
+            f2l_i = 0
+            pll_i = 0
+
+            for i in range(8):
+                if f2l_i == 4 and pll_i == 4:
+                    break
+
+                cp_i = corner_perm[i]
+                co_i = corner_ori[i]
+
+                if cp_i in self.corners:
+                    corner_f2l_perm[i] = cp_i
+                    corner_f2l_ori[i] = co_i
+                    f2l_i += 1
+
+                if cp_i in self.cornersPLL:
+                    corner_pll_perm[i] = cp_i
+                    corner_pll_ori[i] = co_i
+                    pll_i += 1
+
+            self.cof = corner_f2l_ori
+            self.cpf = corner_f2l_perm
+            self.copll = corner_pll_ori
+            self.cppll = corner_pll_perm
 
     def edge_multiply(self, b):
         edge_perm = [0,0,0,0,0,0,0,0,0,0,0,0]
@@ -695,36 +921,100 @@ class CubieCube:
         self.eo = edge_ori
         self.ep = edge_perm
 
-        edge_cross_perm = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
-        edge_cross_ori = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
-        edge_f2l_perm = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
-        edge_f2l_ori = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
 
-        cross_i = 0
-        f2l_i = 0
-        self_edges_len = len(self.edges)
+        if self.type == 1:
+            edge_cross_perm = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+            edge_cross_ori = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
 
-        for i in range(12):
-            if cross_i == 4 and f2l_i == self_edges_len:
-                break
+            cross_i = 0
 
-            ep_i = edge_perm[i]
-            eo_i = edge_ori[i]
+            for i in range(12):
+                if cross_i == 4:
+                    break
 
-            if ep_i in _edgesCross_set:
-                edge_cross_perm[i] = ep_i
-                edge_cross_ori[i] = eo_i
-                cross_i += 1
+                ep_i = edge_perm[i]
+                eo_i = edge_ori[i]
 
-            if ep_i in self.edges:
-                edge_f2l_perm[i] = ep_i
-                edge_f2l_ori[i] = eo_i
-                f2l_i += 1
+                if ep_i in _edgesCross_set:
+                    edge_cross_perm[i] = ep_i
+                    edge_cross_ori[i] = eo_i
+                    cross_i += 1
 
-        self.eoc = edge_cross_ori
-        self.epc = edge_cross_perm
-        self.eof = edge_f2l_ori
-        self.epf = edge_f2l_perm
+            self.eoc = edge_cross_ori
+            self.epc = edge_cross_perm
+
+        if self.type == 2:
+            edge_cross_perm = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+            edge_cross_ori = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+            edge_f2l_perm = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+            edge_f2l_ori = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+
+            cross_i = 0
+            f2l_i = 0
+            self_edges_len = len(self.edges)
+
+            for i in range(12):
+                if cross_i == 4 and f2l_i == self_edges_len:
+                    break
+
+                ep_i = edge_perm[i]
+                eo_i = edge_ori[i]
+
+                if ep_i in _edgesCross_set:
+                    edge_cross_perm[i] = ep_i
+                    edge_cross_ori[i] = eo_i
+                    cross_i += 1
+
+                if ep_i in self.edges:
+                    edge_f2l_perm[i] = ep_i
+                    edge_f2l_ori[i] = eo_i
+                    f2l_i += 1
+
+            self.eoc = edge_cross_ori
+            self.epc = edge_cross_perm
+            self.eof = edge_f2l_ori
+            self.epf = edge_f2l_perm
+
+        if self.type == 3:
+            edge_cross_perm = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+            edge_cross_ori = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+            edge_f2l_perm = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+            edge_f2l_ori = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+            edge_pll_perm = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]
+            edge_pll_ori = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]
+
+            cross_i = 0
+            f2l_i = 0
+            pll_i = 0
+
+            for i in range(12):
+                if cross_i == 4 and f2l_i == 4 and pll_i == 4:
+                    break
+
+                ep_i = edge_perm[i]
+                eo_i = edge_ori[i]
+
+                if ep_i in _edgesCross_set:
+                    edge_cross_perm[i] = ep_i
+                    edge_cross_ori[i] = eo_i
+                    cross_i += 1
+
+                if ep_i in self.edges:
+                    edge_f2l_perm[i] = ep_i
+                    edge_f2l_ori[i] = eo_i
+                    f2l_i += 1
+
+                if ep_i in self.edgesPLL:
+                    edge_pll_perm[i] = ep_i
+                    edge_pll_ori[i] = eo_i
+                    pll_i += 1
+
+            self.eoc = edge_cross_ori
+            self.epc = edge_cross_perm
+            self.eof = edge_f2l_ori
+            self.epf = edge_f2l_perm
+            self.eopll = edge_pll_ori
+            self.eppll = edge_pll_perm
 
     def move(self, i):
         b = MOVE_CUBE[i]
