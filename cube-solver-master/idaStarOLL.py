@@ -254,7 +254,7 @@ class IDA_star(object):
         stateOLLCorner = to_facecube_state_corner(cube)
         stateOLLEdge = to_facecube_state_edge(cube)
 
-        h_corner = h_cross = h_edge = h_edge_oll = h_corner_oll = 8
+        h_corner = h_cross = h_edge = h_edge_oll = h_corner_oll = 5
 
         try:
             h_corner = self.cornerHeur[stateCorner]

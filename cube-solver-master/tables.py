@@ -48,6 +48,9 @@ class TableLoader():
         self.heurCornerOLL = self.loadHeuristic("heuristics/heuristicsCornerOLL.pickle")
         self.heurEdgeOLL = self.loadHeuristic("heuristics/heuristicsEdgeOLL.pickle")
 
+        self.oll = self.loadHeuristic("heuristics/oll.pickle")
+        self.pll = self.loadHeuristic("heuristics/pll.pickle")
+
         self.all_heur = {
             "0" : self.heurURF,
             "1" : self.heurUFL,

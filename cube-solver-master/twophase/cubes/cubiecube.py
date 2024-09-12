@@ -1031,7 +1031,7 @@ class CubieCube:
             ori = self.co[i]
             for k in range(3):
                 if(facecube.corner_color[j][k] == Color.D):
-                    index_d += 1;
+                    index_d += 1
                     index = facecube.corner_facelet[i][(k + ori) % 3]
                     face= face[:index] + facecube.corner_color[j][k].name + face[index + 1:]
         index_d = 0

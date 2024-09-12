@@ -1,36 +1,43 @@
-from twophase.cubes import cubiecube, facecube
-from twophase.pieces import Color, Facelet, Corner, Edge
-import time
-import random
+from twophase.cubes.rubiks_cube import Cube
 from tables import TableLoader
 
 table = TableLoader()
-print(table.heurCornerPLL)
 
-# def to_facecube_state_corner(cube):
-#     ret = "-------------------------------------------------"
-#     for i in range(8):
-#         j = cube.cp[i]
-#         ori = cube.co[i]
-#         for k in range(3):
-#             if(facecube.corner_color[j][k] == Color.D):
-#                 index = facecube.corner_facelet[i][(k + ori) % 3]
-#                 ret= ret[:index] + facecube.corner_color[j][k].name + ret[index + 1:]
-#     return ret
+scramble = "R U2 R' R' F R F' U2 R' F R F'"
 
-# def to_facecube_state_edge(cube):
-#     ret = "-------------------------------------------------"
-#     print(len(ret))
-#     for i in range(12):
-#         j = cube.ep[i]
-#         ori = cube.eo[i]
-#         for k in range(2):
-#             if(facecube.edge_color[j][k] == Color.D):
-#                 index = facecube.edge_facelet[i][(k + ori) % 2]
-#                 ret = ret[:index] + facecube.edge_color[j][k].name + ret[index + 1:]
-#     return ret
+cube = Cube(2)
 
-# cube = cubiecube.CubieCube();
-# cube.move(random.randint(0, 17))
-# print(to_facecube_state_corner(cube))
-# print(to_facecube_state_edge(cube))
+cube.do_moves("z2")
+scrambleArr = scramble.split(" ")
+
+for move in scrambleArr:
+    cube.do_moves(move)
+cube.do_moves("U2")
+
+cube_state = str(cube.cube)
+value = table.oll[cube_state]
+
+cube = Cube(3)
+
+cube.do_moves("z2")
+scrambleArr = scramble.split(" ")
+
+for move in scrambleArr:
+    cube.do_moves(move)
+cube.do_moves("U2")
+solution = value[11]
+
+solutionArr = solution.split(" ")
+
+for move in solutionArr:
+    cube.do_moves(move)
+
+cube.do_moves("U")
+
+cube_state = str(cube.cube)
+
+value = table.pll[cube_state]
+
+print(solution)
+
+print(value[0])

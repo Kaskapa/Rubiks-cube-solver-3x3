@@ -7,6 +7,7 @@ from idaStarCross import IDA_star_cross
 from idaStarF2L import IDA_star_F2L
 from collections import OrderedDict
 
+
 tableLoader = TableLoader()
 
 ACTIONS = {
@@ -139,6 +140,8 @@ class TranspositionTable:
             self.table.popitem(last=False)
         self.table[key] = value
 
+actionsForLoop = [0, 3, 7, 10, 8, 11]
+
 class IDA_star(object):
     def __init__(self, max_depth=100, table_size=10**6):
         self.max_depth = max_depth
@@ -196,24 +199,23 @@ class IDA_star(object):
             return True
 
         min_cost = float('inf')
-        for action in range(18):
-            if action == 2 or action == 3 or action == 4 or action == 8 or action == 9 or action == 10 or action == 14 or action == 15 or action == 16:
-                cube_copy = cube.__deepcopy__()
-                cube_copy.move(action)
+        for action in actionsForLoop:
+            cube_copy = cube.__deepcopy__()
+            cube_copy.move(action)
 
-                if len(self.moves) > 0 and action in REDUNDANT_ACTIONS[self.moves[-1]]:
-                    continue
+            if len(self.moves) > 0 and action in REDUNDANT_ACTIONS[self.moves[-1]]:
+                continue
 
-                if len(self.moves) > 1 and action in REDUNDANT_ACTIONS_2[self.moves[-1]] and action in REDUNDANT_ACTIONS[self.moves[-2]]:
-                    continue
+            if len(self.moves) > 1 and action in REDUNDANT_ACTIONS_2[self.moves[-1]] and action in REDUNDANT_ACTIONS[self.moves[-2]]:
+                continue
 
-                self.moves.append(action)
-                distance = self.search(cube_copy, g_score + 1, threshold)
-                if distance == True:
-                    return True
-                if distance < min_cost:
-                    min_cost = distance
-                self.moves.pop()
+            self.moves.append(action)
+            distance = self.search(cube_copy, g_score + 1, threshold)
+            if distance == True:
+                return True
+            if distance < min_cost:
+                min_cost = distance
+            self.moves.pop()
 
         self.transposition_table.put(cube_key, {'g_score': g_score, 'f_score': min_cost})
         return min_cost
@@ -225,7 +227,8 @@ class IDA_star(object):
         statePLLCorner = (*cube.cppll, *cube.copll)
         statePLLEdge = (*cube.eppll, *cube.eopll)
 
-        h_corner = h_cross = h_edge = h_edge_pll = h_corner_pll = 8
+        h_corner = h_cross = h_edge = 5
+        h_edge_pll = h_corner_pll = 8
 
         try:
             h_corner = self.cornerHeur[stateCorner]
@@ -252,25 +255,36 @@ class IDA_star(object):
         except KeyError:
             pass
 
-        h_f2l = max(h_corner, h_cross, h_edge)
+        # h_f2l = max(h_corner, h_cross, h_edge)
 
         h_pll = h_edge_pll + h_corner_pll
 
-        h_value = h_f2l + h_pll
+        h_value = h_pll
         return h_value
 
-if __name__ == "__main__":
+all_sol = []
+
+def main_func():
     cube = cubiecube.CubieCube(type=3)
 
-    scramble = "L D L' D' L' F L2 D' L' D' L D L' F'"
+    # scramble = "L D L' D' L' F L2 D' L' D' L D L' F'"
+    # scramble = "L D L' D L' D' L2 D' L' D L' D L L"
+    scramble = "L' D' F' L D L' D' L' F L2 D' L' D' L D L' D L"
     cube = do_algorithm(scramble, cube)
 
     ida_star = IDA_star()
     start = time.time()
     solution = ida_star.run(cube)
     end = time.time()
-    print("Time:", end - start)
-    for move in solution:
-        print(ACTIONS[move].replace("D","U").replace("L", "R"), end=" ")
-    print()
 
+    all_sol.append(solution)
+
+    print("Time:", end - start)
+if __name__ == "__main__":
+
+    main_func()
+
+    for sol in all_sol:
+        for move in sol:
+            print(ACTIONS[move], end=" ")
+        print()

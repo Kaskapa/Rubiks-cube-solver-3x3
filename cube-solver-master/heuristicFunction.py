@@ -3,8 +3,9 @@ from twophase.pieces import Edge, Corner
 import pickle
 import threading
 
+actionsForLoop = [0, 3, 7, 10, 8, 11]
 
-def build_heuristic_db(cube, edge, array, array2, max_moves=4):
+def build_heuristic_db(cube, edge, array, array2, max_moves=6):
     heuristic = {}
 
     def get_edges(cube):
@@ -38,7 +39,7 @@ def build_heuristic_db(cube, edge, array, array2, max_moves=4):
         if depth > max_moves:
             continue
 
-        for action in range(18):
+        for action in actionsForLoop:
             new_cube = current_cube.__deepcopy__()
             new_cube = actions(action, new_cube)
             new_actions = previous_actions + [action]
