@@ -3,7 +3,7 @@ from tables import TableLoader
 
 table = TableLoader()
 
-class Solver:
+class OLLSolver:
     def __init__(self):
         self.table = table.oll
 
@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     print(cube.cube)
 
-    solver = Solver()
+    solver = OLLSolver()
     solutions = solver.solve(cube)
 
     for solution in solutions:

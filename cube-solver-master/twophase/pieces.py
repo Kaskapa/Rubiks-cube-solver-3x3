@@ -1,6 +1,5 @@
 from enum import IntEnum
 
-
 class Color(IntEnum):
     U = 0
     R = 1

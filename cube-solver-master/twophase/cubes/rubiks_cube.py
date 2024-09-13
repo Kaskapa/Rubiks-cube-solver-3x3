@@ -319,7 +319,6 @@ class Cube:
 
         for i in range(3):
             for j in range(3):
-
                 self.cube[0][i][j] = temp0[2-j][i]
                 self.cube[1][i][j] = temp1[2-j][i]
                 self.cube[5][i][j] = temp2[2-j][i]
@@ -490,8 +489,6 @@ class Cube:
         self.front_turn()
         self.front_turn()
         self.back_turn()
-        self.z_rotation()
-        self.z_rotation()
         self.z_rotation()
 
     def d_small_turn(self):

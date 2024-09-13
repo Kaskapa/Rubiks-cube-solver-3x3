@@ -35,7 +35,6 @@ with open("heuristics/oll.txt", "r") as f:
                 fi.write(line)
 
                 while(line != "\n"):
-                    print(line)
                     fi.write(line)
                     line = f.readline()
 
