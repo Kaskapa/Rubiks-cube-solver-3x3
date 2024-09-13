@@ -7,6 +7,8 @@ from twophase.pieces import Corner, Edge
 from itertools import permutations
 import time
 
+# R L2 U F2 L2 B2 D R2 U' F R U B' R F L' B' U2 F' D2 R' U2 B'
+
 ACTIONS = {
     0: "U",
     1: "R",
