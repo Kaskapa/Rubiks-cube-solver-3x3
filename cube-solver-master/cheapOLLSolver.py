@@ -1,11 +1,13 @@
 from twophase.cubes.rubiks_cube import Cube
 from tables import TableLoader
+import copy
 
 table = TableLoader()
 
 class OLLSolver:
     def __init__(self):
         self.table = table.oll
+        self.solutions = []
 
     def solve(self, cube):
         checkCube = Cube(2)
@@ -24,25 +26,25 @@ class OLLSolver:
 
         u_moves = ["U" for i in range(counter)]
 
-        solutions = self.table[cube_state]
-        solutions.append(" ".join(u_moves))
+        self.solutions = copy.deepcopy(self.table[cube_state])
+        self.solutions.append(" ".join(u_moves))
 
-        return solutions
+        return self.solutions
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    scramble = "F B' R U2 L2 B R' D' L' U F' R' D' B L U B2 D' R2 B L' F U2 R B' L' U' D F B2 D' F' D L B2 L' R D' R' L2 D2 L' D2 L D' L F2 D' F D' F' D2 F2"
-    # scramble = ""
-    cube = Cube(2)
-    scrambleArr = scramble.split(" ")
-    for move in scrambleArr:
-        cube.do_moves(move)
-    cube.do_moves("z2")
+    # scramble = "F B' R U2 L2 B R' D' L' U F' R' D' B L U B2 D' R2 B L' F U2 R B' L' U' D F B2 D' F' D L B2 L' R D' R' L2 D2 L' D2 L D' L F2 D' F D' F' D2 F2"
+    # # scramble = ""
+    # cube = Cube(2)
+    # scrambleArr = scramble.split(" ")
+    # for move in scrambleArr:
+    #     cube.do_moves(move)
+    # cube.do_moves("z2")
 
-    print(cube.cube)
+    # print(cube.cube)
 
-    solver = OLLSolver()
-    solutions = solver.solve(cube)
+    # solver = OLLSolver()
+    # solutions = solver.solve(cube)
 
-    for solution in solutions:
-        print(solution)
+    # for solution in solutions:
+    #     print(solution)
