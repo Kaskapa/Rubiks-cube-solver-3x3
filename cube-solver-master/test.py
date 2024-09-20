@@ -1,12 +1,29 @@
-from twophase.cubes.rubiks_cube import Cube
+from fullSolver import Solver
+import time
 
-# scramble = ["F'", 'R', 'F', "R'", "U'", 'S', "R'", 'U', 'R', "S'", 'y']
-# scramble = ["y'", "S'", "R", 'U', "R'", "S", "U'", "R'", "F", "R", "F'"]
-scramble = ["E"]
-cube = Cube(0)
+def solve(scramble):
+    solver = Solver(scramble)
+    solutions = solver.solve()
+    return solutions
 
+if __name__ == "__main__":
+    with open("scrambles.txt", "r") as f:
+        scrambles = f.readlines()
 
-for move in scramble:       
-    cube.do_moves(move)
+    # for i, scramble in enumerate(scrambles):
+    scramble = scrambles[0].replace("\n", "")
+    startTime = time.time()
+    solutions = solve(scramble)
+    print("Solved in", time.time() - startTime, "seconds")
 
-print(cube.cube)    
+    with open(f"solutions/solution{0}.txt", "a") as f:
+        for solution in solutions:
+            f.write(str(solution.getInspection()) + "\n")
+            f.write(str(solution.getCross()) + "\n")
+            f.write(str(solution.getF2L()) + "\n")
+            f.write(str(solution.getPre()) + "\n")
+            f.write(str(solution.getOLL()) + "\n")
+            f.write(str(solution.getPrePLL()) + "\n")
+            f.write(str(solution.getPLL()) + "\n")
+            f.write(str(solution.getPost()) + "\n")
+            f.write("\n")

@@ -31,6 +31,7 @@ ACTIONS = {
     16: "L'",
     17: "B'"
 }
+
 def actionsWithNotations(action, cube):
     if(action == "U"):
         cube.move(0)
@@ -69,6 +70,7 @@ def actionsWithNotations(action, cube):
     elif(action == "B2"):
         cube.move(11)
     return cube
+
 def do_algorithm(algorithm, cube):
     algorithmArray = algorithm.split(" ")
     for move in algorithmArray:
@@ -77,18 +79,20 @@ def do_algorithm(algorithm, cube):
 
 class Solution:
     def __init__(self):
+        self.inspection = "z2"
         self.cross_solution = ""
-        self.f2l_solution = ""
+        self.f2l_solutions = []
         self.preMoves = ""
         self.oll_solution = ""
         self.prePLLMoves = ""
         self.pll_solution = ""
+        self.postMoves = ""
 
     def getCross(self):
         return self.cross_solution
     
     def getF2L(self):
-        return self.f2l_solution
+        return self.f2l_solutions
 
     def getPre(self):
         return self.preMoves
@@ -102,11 +106,18 @@ class Solution:
     def getPLL(self):
         return self.pll_solution
 
+    def getInspection(self):
+        return self.inspection
+    
+    def getPost(self):
+        return self.postMoves
+
     def setCross(self, crossSol):
         self.cross_solution = crossSol
 
-    def setF2L(self, f2lSol):
-        self.f2l_solution = f2lSol
+    def setF2L(self, f2lSolutions):
+        for f2lSol in f2lSolutions:
+            self.f2l_solutions.append(f2lSol)
     
     def setPre(self, pre):
         self.preMoves = pre
@@ -120,161 +131,227 @@ class Solution:
     def setPLL(self, pll):
         self.pll_solution = pll
 
-scramble = input("Enter scramble: ")
+    def setPost(self, post):
+        self.postMoves = post
 
-# Cross
-cube = CubieCube()
-cube = do_algorithm(scramble, cube)
+class Solver:
+    def __init__(self, scramble):
+        self.scramble = scramble
+        self.cube = CubieCube()
+        self.cube = do_algorithm(scramble, self.cube)
+        
+        self.f2l_corners = [Corner.URF, Corner.UFL, Corner.ULB, Corner.UBR]
+        self.f2l_edges = [Edge.FR, Edge.FL, Edge.BL, Edge.BR]
+        self.f2l_corners_combinations = list(permutations(self.f2l_corners, 4))
+        self.f2l_edges_combinations = list(permutations(self.f2l_edges, 4))
 
-crossSolver = IDA_star_cross()
-crossSolution = crossSolver.run(cube)
-crossSolution = " ".join([ACTIONS[move] for move in crossSolution])
+    def crossSolver(self):
+        crossSolver = IDA_star_cross()
+        crossSolution = crossSolver.run(self.cube)
+        crossSolution = " ".join([ACTIONS[move] for move in crossSolution])
 
-newSol = Solution()
-newSol.setCross(crossSolution)
+        solution = Solution()
+        solution.setCross(crossSolution)
 
-# F2L
-f2l_solutions = []
+        return solution
+    
+    def _toStringArray(self, array):
+        string = [value.value for value in array]
+        string.sort()
+        string = "".join(str(x) for x in string)
 
-solved_f2l_corners = []
-solved_f2l_edges = []
+        return string
 
-f2l_corners = [Corner.URF, Corner.UFL, Corner.ULB, Corner.UBR]
-f2l_edges = [Edge.FR, Edge.FL, Edge.BL, Edge.BR]
+    def f2lSolver(self, crossSolution):
+        f2l_solutions = []
 
-f2l_corners_combinations = list(permutations(f2l_corners, 4))
-f2l_edges_combinations = list(permutations(f2l_edges, 4))
+        sol_mem = {}
 
-all_sol = []
-sol_heur = {}
+        for j in range(len(self.f2l_corners_combinations)):
+            f2l_sol = []
+            f2l_corners = self.f2l_corners_combinations[j]
+            f2l_edges= self.f2l_edges_combinations[j]
+            for i in range(len(f2l_corners)):
+                corners = f2l_corners[:i+1]
+                edges = f2l_edges[:i+1]
 
-start_time_main = time.time()
-for j in range(len(f2l_corners_combinations)):
-    f2l_sol = []
-    f2l_corners = f2l_corners_combinations[j]
-    f2l_edges= f2l_edges_combinations[j]
-    for i, corner in enumerate(f2l_corners):
-        corners = f2l_corners[:i+1]
-        edges = f2l_edges[:i+1]
+                cube = CubieCube(corners=corners, edges=edges)
+                cube = do_algorithm(self.scramble, cube)
+                cube = do_algorithm(crossSolution.getCross(), cube)
 
-        cube = CubieCube(corners=corners, edges=edges)
-        cube = do_algorithm(scramble, cube)
-        cube = do_algorithm(crossSolution, cube)
+                for alg in f2l_sol:
+                    for move in alg:
+                        cube.move(move)
 
-        for alg in f2l_sol:
-            for move in alg:
-                cube.move(move)
+                cornerStr = self._toStringArray(corners)
+                edgeStr = self._toStringArray(edges)
 
-        cornerStr = [corner.value for corner in corners]
-        edgeStr = [edge.value for edge in edges]
+                if (cornerStr, edgeStr, str(cube.cof), str(cube.cpf), str(cube.eo), str(cube.ep)) in sol_mem:
+                    f2l_sol.append(sol_mem[(cornerStr, edgeStr, str(cube.cof), str(cube.cpf), str(cube.eo), str(cube.ep))])
+                    continue
 
-        cornerStr.sort()
-        edgeStr.sort()
+                solver = IDA_star_F2L(corners, edges, cornerStr, edgeStr)
+                moves = solver.run(cube)
 
-        cornerStr = "".join(str(x) for x in cornerStr)
-        edgeStr = "".join(str(x) for x in edgeStr)
+                f2l_sol.append(moves)
 
-        if (cornerStr, edgeStr, str(cube.cof), str(cube.cpf), str(cube.eo), str(cube.ep)) in sol_heur:
-            f2l_sol.append(sol_heur[(cornerStr, edgeStr, str(cube.cof), str(cube.cpf), str(cube.eo), str(cube.ep))])
-            continue
+                sol_mem[(cornerStr, edgeStr, str(cube.cof), str(cube.cpf), str(cube.eo), str(cube.ep))] = moves
 
-        solver = IDA_star_F2L(corners, edges, cornerStr, edgeStr)
-        start_time = time.time()
-        moves = solver.run(cube)
+            f2lSolutionArray = []
+            for alg in f2l_sol:
+                solutionString = ""
+                for move in alg:
+                    solutionString += ACTIONS[move] + " "
+                f2lSolutionArray.append(solutionString)
 
-        f2l_sol.append(moves)
-        end_time = time.time()
+            f2l_solution = copy.deepcopy(crossSolution)
+            f2l_solution.setF2L(f2lSolutionArray)
+            f2l_solutions.append(f2l_solution)
 
-        print("Execution time:", end_time - start_time, "seconds")
+        return f2l_solutions
 
-        sol_heur[(cornerStr, edgeStr, str(cube.cof), str(cube.cpf), str(cube.eo), str(cube.ep))] = moves
-    print("Scramble:", scramble)
+    def _isPreMoves(self, moves):
+        return "U" in moves and "L" not in moves and "R" not in moves and "F" not in moves and "B" not in moves and "D" not in moves and "M" not in moves and "S" not in moves and "E" not in moves
 
-    print("Cross solution:" , crossSolution)
+    def ollSolver(self, f2l_solutions):
+        oll_all = []
+        scrambleArr = self.scramble.split(" ")
+        for solution_f2l in f2l_solutions:
+            self.cube = Cube(2)
+            for move in scrambleArr:
+                self.cube.do_moves(move)
+            
+            for move in solution_f2l.getCross().split(" "):
+                self.cube.do_moves(move)
+            
+            for alg in solution_f2l.getF2L():
+                for move in alg.split(" "):
+                    self.cube.do_moves(move)
+            
+            self.cube.do_moves("z2")
 
-    f2lSTRING = ""
+            solver = OLLSolver()
+            OLL_solutions = solver.solve(self.cube)
 
-    for alg in f2l_sol:
-        for move in alg:
-            f2lSTRING += ACTIONS[move] + " "
-            print(ACTIONS[move], end=" ")
+            if(self._isPreMoves(OLL_solutions[-1])):
+                solution_f2l.setPre(OLL_solutions[-1])
+            for oll_solution in OLL_solutions:
+                if((oll_solution == OLL_solutions[-1] and self._isPreMoves(oll_solution)) or oll_solution == ""):
+                    continue
+                solution_f2l.setOLL(oll_solution)
+                oll_all.append(copy.deepcopy(solution_f2l))
+        
+        return oll_all
+
+    def pllSolver(self, oll_all):
+        all_pll = []
+        scrambleArr = self.scramble.split(" ")
+        for solution_oll in oll_all:
+            self.cube = Cube(3)
+            for move in scrambleArr:
+                self.cube.do_moves(move)
+            
+            crossSolutionArr = solution_oll.getCross().split(" ")
+            for move in crossSolutionArr:
+                self.cube.do_moves(move)
+            
+            for alg in solution_oll.getF2L():
+                for move in alg.split(" "):
+                    self.cube.do_moves(move)
+            
+            self.cube.do_moves("z2")
+
+            if("Cube is already solved" not in solution_oll.getOLL()):
+                for move in solution_oll.getPre().split(" "):
+                    self.cube.do_moves(move)
+
+                for move in solution_oll.getOLL().split(" "):
+                    self.cube.do_moves(move)
+
+            solver = PLLSolver()
+            PLLSolutions = solver.solve(self.cube)
+
+            if(self._isPreMoves(PLLSolutions[-1])):
+                solution_oll.setPrePLL(PLLSolutions[-1])
+            for pll_solution in PLLSolutions:
+                pllCube = copy.deepcopy(self.cube)
+
+                for move in solution_oll.getPrePLL().split(" "):
+                    pllCube.do_moves(move)
+                
+                for move in pll_solution.split(" "):
+                    pllCube.do_moves(move)
+
+                checkCube = Cube(3)
+                checkCube.do_moves("z2")
+
+                postMoves = ""
+                counter = 0
+
+                while str(checkCube.cube) != str(pllCube.cube) and counter < 5:
+                    pllCube.do_moves("U")
+                    postMoves += "U "
+                    counter += 1
+
+                if((pll_solution == PLLSolutions[-1] and self._isPreMoves(PLLSolutions)) or pll_solution == ""):
+                    continue
+                solution_oll.setPLL(pll_solution)
+                solution_oll.setPost(postMoves)
+                all_pll.append(copy.deepcopy(solution_oll))
+
+        return all_pll
+    
+    def _convertToZ2(self, string):
+        stringArr = string.split(" ")
+        final = ""
+        for move in stringArr:
+            if "U" in move:
+                final += move.replace("U", "D") + " "
+            elif "D" in move:
+                final += move.replace("D", "U") + " "
+            elif "L" in move:
+                final += move.replace("L", "R") + " "
+            elif "R" in move:
+                final += move.replace("R", "L") + " "
+            elif "F" in move:
+                final += move.replace("F", "F") + " "
+            elif "B" in move:
+                final += move.replace("B", "B") + " "
+        return final
+
+    def solve(self):
+        crossSolution = self.crossSolver()
+        f2l_solutions = self.f2lSolver(crossSolution)
+        oll_all = self.ollSolver(f2l_solutions)
+        all_pll = self.pllSolver(oll_all)
+
+        for i, solution in enumerate(all_pll):
+            solution.setCross(self._convertToZ2(solution.getCross()))
+            for j, f2l in enumerate(solution.getF2L()):
+                solution.getF2L()[j] = self._convertToZ2(f2l)
+            
+            all_pll[i] = copy.deepcopy(solution)
+
+        return all_pll
+    
+
+if __name__ == "__main__":
+    scramble = input("Enter scramble: ")
+
+    startTime = time.time()
+
+    solver = Solver(scramble)
+    solutions = solver.solve()
+
+    print("Time taken: " + str(time.time() - startTime))
+
+    for solution in solutions:
+        print("Scramble: " + scramble)
+        print("Cross: " + solution.getCross())
+        for f2l in solution.getF2L():
+            print("F2L: " + f2l)
+        print("OLL: " + solution.getPre() + " " + solution.getOLL())
+        print("PLL: " + solution.getPrePLL() + " " + solution.getPLL())
+
         print()
-    all_sol.append(f2l_sol)
-
-    f2l_solution = copy.deepcopy(newSol)
-    f2l_solution.setF2L(f2lSTRING)
-    f2l_solutions.append(f2l_solution)
-
-end_time_main = time.time()
-print("Execution time:", end_time_main - start_time_main, "seconds")
-
-# OLL
-
-oll_all = []
-scrambleArr = scramble.split(" ")
-for solution_f2l in f2l_solutions:
-    cube = Cube(2)
-    for move in scrambleArr:
-        cube.do_moves(move)
-    
-    crossSolutionArr = crossSolution.split(" ")
-    for move in solution_f2l.getCross().split(" "):
-        cube.do_moves(move)
-    
-    for move in solution_f2l.getF2L().split(" "):
-        cube.do_moves(move)
-    
-    cube.do_moves("z2")
-
-    solver = OLLSolver()
-    OLL_solutions = solver.solve(cube)
-
-    if("U" in OLL_solutions[-1] and "L" not in OLL_solutions[-1] and "R" not in OLL_solutions[-1] and "F" not in OLL_solutions[-1] and "B" not in OLL_solutions[-1] and "D" not in OLL_solutions[-1] and "M" not in OLL_solutions[-1] and "S" not in OLL_solutions[-1] and "E" not in OLL_solutions[-1]):
-        solution_f2l.setPre(OLL_solutions[-1])
-    for oll_solution in OLL_solutions:
-        solution_f2l.setOLL(oll_solution)
-        oll_all.append(copy.deepcopy(solution_f2l))
-
-# PLL
-all_pll = []
-scrambleArr = scramble.split(" ")
-for solution_oll in oll_all:
-    cube = Cube(3)
-    for move in scrambleArr:
-        cube.do_moves(move)
-    
-    crossSolutionArr = solution_oll.getCross().split(" ")
-    for move in crossSolutionArr:
-        cube.do_moves(move)
-    
-    for move in solution_oll.getF2L().split(" "):
-        cube.do_moves(move)
-    
-    cube.do_moves("z2")
-
-    if("Cube is already solved" not in solution_oll.getOLL()):
-        for move in solution_oll.getPre().split(" "):
-            cube.do_moves(move)
-
-        for move in solution_oll.getOLL().split(" "):
-            cube.do_moves(move)
-
-    solver = PLLSolver()
-    PLLSolutions = solver.solve(cube)
-
-    if("U" in PLLSolutions[-1] and "L" not in PLLSolutions[-1] and "R" not in PLLSolutions[-1] and "F" not in PLLSolutions[-1] and "B" not in PLLSolutions[-1] and "D" not in PLLSolutions[-1] and "M" not in PLLSolutions[-1] and "S" not in PLLSolutions[-1] and "E" not in PLLSolutions[-1]):
-        solution_oll.setPrePLL(PLLSolutions[-1])
-    for pll_solution in PLLSolutions:
-        solution_oll.setPLL(pll_solution)
-        all_pll.append(copy.deepcopy(solution_oll))
-
-for pll in all_pll:
-    print("Cross solution: " + pll.getCross())
-    print("F2L Solution: " + pll.getF2L())
-    print("Pre OLL Moves: " + pll.getPre())
-    print("OLL solution: " + pll.getOLL())
-    print("Pre PLL Moves: " + pll.getPrePLL())
-    print("PLL solution: " + pll.getPLL()) 
-    print()
-
-print(len(all_pll))
+        print()

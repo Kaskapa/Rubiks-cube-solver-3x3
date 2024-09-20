@@ -18,6 +18,8 @@ class PLLSolver:
         cube_state = str(cube.cube)
         counter = 0
         while cube_state not in self.table:
+            if(cube_state == str(checkCube.cube)):
+                return ["Cube is already solved"]
             if(counter > 4):
                 return ["Error: PLL not found", cube_state]
             cube.do_moves("U")

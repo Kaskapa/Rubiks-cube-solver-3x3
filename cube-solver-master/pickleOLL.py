@@ -32,7 +32,5 @@ with open("heuristics/ollNewIndex.txt", "r") as f:
 
         line = f.readline()
 
-print(oll)
-
 with open("heuristics/oll.pickle", "wb") as f:
     pickle.dump(oll, f)
