@@ -1,5 +1,6 @@
 from fullSolver import Solver
 import time
+import json
 
 def solve(scramble):
     solver = Solver(scramble)
@@ -16,14 +17,7 @@ if __name__ == "__main__":
     solutions = solve(scramble)
     print("Solved in", time.time() - startTime, "seconds")
 
-    with open(f"solutions/solution{0}.txt", "a") as f:
-        for solution in solutions:
-            f.write(str(solution.getInspection()) + "\n")
-            f.write(str(solution.getCross()) + "\n")
-            f.write(str(solution.getF2L()) + "\n")
-            f.write(str(solution.getPre()) + "\n")
-            f.write(str(solution.getOLL()) + "\n")
-            f.write(str(solution.getPrePLL()) + "\n")
-            f.write(str(solution.getPLL()) + "\n")
-            f.write(str(solution.getPost()) + "\n")
-            f.write("\n")
+    solutionsAsDict = [solution.toDict() for solution in solutions]
+
+    with open(f"solutions/solution{0}.json", "a") as f:
+        json.dump(solutionsAsDict, f, indent=4)

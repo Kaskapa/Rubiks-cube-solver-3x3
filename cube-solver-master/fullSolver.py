@@ -134,6 +134,18 @@ class Solution:
     def setPost(self, post):
         self.postMoves = post
 
+    def toDict(self):
+        return {
+            "inspection": self.inspection,
+            "cross": self.cross_solution,
+            "f2l": self.f2l_solutions,
+            "pre": self.preMoves,
+            "oll": self.oll_solution,
+            "prePLL": self.prePLLMoves,
+            "pll": self.pll_solution,
+            "post": self.postMoves
+        }
+
 class Solver:
     def __init__(self, scramble):
         self.scramble = scramble
