@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        async function getSolution(){
+            console.log("Hello");
+            const url = "http://127.0.0.1:5000/solve/L U B2 D F2 U2 L' D' U' L B2 U2 F R' D2 F2 R B' D L' B"
+
+            try{
+                const response = await fetch(url);
+                
+                const json = await response.json();
+                console.log(json);
+            }catch(error){
+                console.log(error.message);
+            }
+        }
+
+        getSolution();
+    </script>
+</body>
+</html>
