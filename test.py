@@ -12,7 +12,7 @@ if __name__ == "__main__":
         scrambles = f.readlines()
 
     # for i, scramble in enumerate(scrambles):
-    scramble = scrambles[0].replace("\n", "")
+    scramble = "U2 R F' D' L B' D' F R' U' L D R F2 D2 L B' U R F' D2 L"
     startTime = time.time()
     solutions = solve(scramble)
     print("Solved in", time.time() - startTime, "seconds")

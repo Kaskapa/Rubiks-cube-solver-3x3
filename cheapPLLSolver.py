@@ -28,7 +28,7 @@ class PLLSolver:
 
         u_moves = ["U" for i in range(counter)]
 
-        self.solutions = copy.deepcopy(self.table[cube_state])
+        self.solutions = copy.deepcopy(self.table[cube_state][:len(self.table[cube_state])//2])
         self.solutions.append(" ".join(u_moves))
 
         return self.solutions
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     for move in scrambleArr:
         cube.do_moves(move)
 
-    print(cube.cube)    
+    print(cube.cube)
 
     solver = PLLSolver()
     solutions = solver.solve(cube)

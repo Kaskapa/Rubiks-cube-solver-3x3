@@ -10,7 +10,7 @@ CORS(app)
 def solve(scramble):
     solver = Solver(scramble)
     solutions = solver.solve()
-    
+
     return jsonify([solution.toDict() for solution in solutions])
 
 if __name__ == "__main__":

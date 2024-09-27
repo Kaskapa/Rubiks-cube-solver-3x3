@@ -87,16 +87,17 @@ class Solution:
         self.prePLLMoves = ""
         self.pll_solution = ""
         self.postMoves = ""
+        self.size = 0
 
     def getCross(self):
         return self.cross_solution
-    
+
     def getF2L(self):
         return self.f2l_solutions
 
     def getPre(self):
         return self.preMoves
-    
+
     def getOLL(self):
         return self.oll_solution
 
@@ -108,7 +109,7 @@ class Solution:
 
     def getInspection(self):
         return self.inspection
-    
+
     def getPost(self):
         return self.postMoves
 
@@ -118,7 +119,7 @@ class Solution:
     def setF2L(self, f2lSolutions):
         for f2lSol in f2lSolutions:
             self.f2l_solutions.append(f2lSol)
-    
+
     def setPre(self, pre):
         self.preMoves = pre
 
@@ -134,6 +135,36 @@ class Solution:
     def setPost(self, post):
         self.postMoves = post
 
+    def calculateSize(self):
+        size = 0
+        size += len(self.cross_solution.split(" "))
+        for f2l in self.f2l_solutions:
+            size += len(f2l.split(" "))
+        size += len(self.preMoves.split(" "))
+        size += len(self.oll_solution.split(" "))
+        size += len(self.prePLLMoves.split(" "))
+        size += len(self.pll_solution.split(" "))
+        size += len(self.postMoves.split(" "))
+        self.size = size
+
+    def fixPostAndPre(self):
+        if self.postMoves.strip() == "U U U U":
+            self.postMoves = ""
+        if self.preMoves.strip() == "U U U U":
+            self.preMoves = ""
+        if self.prePLLMoves.strip() == "U U U U":
+            self.prePLLMoves = ""
+        if self.postMoves.strip() == "U U U":
+            self.postMoves = "U'"
+        if self.preMoves.strip() == "U U U":
+            self.preMoves = "U'"
+        if self.prePLLMoves.strip() == "U U U":
+            self.prePLLMoves = "U'"
+        if self.postMoves.strip() == "U U":
+            self.postMoves = "U2"
+        if self.preMoves.strip() == "U U":
+            self.preMoves = "U2"
+
     def toDict(self):
         return {
             "inspection": self.inspection,
@@ -143,7 +174,8 @@ class Solution:
             "oll": self.oll_solution,
             "prePLL": self.prePLLMoves,
             "pll": self.pll_solution,
-            "post": self.postMoves
+            "post": self.postMoves,
+            "size": self.size
         }
 
 class Solver:
@@ -151,7 +183,7 @@ class Solver:
         self.scramble = scramble
         self.cube = CubieCube()
         self.cube = do_algorithm(scramble, self.cube)
-        
+
         self.f2l_corners = [Corner.URF, Corner.UFL, Corner.ULB, Corner.UBR]
         self.f2l_edges = [Edge.FR, Edge.FL, Edge.BL, Edge.BR]
         self.f2l_corners_combinations = list(permutations(self.f2l_corners, 4))
@@ -166,7 +198,7 @@ class Solver:
         solution.setCross(crossSolution)
 
         return solution
-    
+
     def _toStringArray(self, array):
         string = [value.value for value in array]
         string.sort()
@@ -232,14 +264,14 @@ class Solver:
             self.cube = Cube(2)
             for move in scrambleArr:
                 self.cube.do_moves(move)
-            
+
             for move in solution_f2l.getCross().split(" "):
                 self.cube.do_moves(move)
-            
+
             for alg in solution_f2l.getF2L():
                 for move in alg.split(" "):
                     self.cube.do_moves(move)
-            
+
             self.cube.do_moves("z2")
 
             solver = OLLSolver()
@@ -252,7 +284,7 @@ class Solver:
                     continue
                 solution_f2l.setOLL(oll_solution)
                 oll_all.append(copy.deepcopy(solution_f2l))
-        
+
         return oll_all
 
     def pllSolver(self, oll_all):
@@ -262,15 +294,15 @@ class Solver:
             self.cube = Cube(3)
             for move in scrambleArr:
                 self.cube.do_moves(move)
-            
+
             crossSolutionArr = solution_oll.getCross().split(" ")
             for move in crossSolutionArr:
                 self.cube.do_moves(move)
-            
+
             for alg in solution_oll.getF2L():
                 for move in alg.split(" "):
                     self.cube.do_moves(move)
-            
+
             self.cube.do_moves("z2")
 
             if("Cube is already solved" not in solution_oll.getOLL()):
@@ -290,7 +322,7 @@ class Solver:
 
                 for move in solution_oll.getPrePLL().split(" "):
                     pllCube.do_moves(move)
-                
+
                 for move in pll_solution.split(" "):
                     pllCube.do_moves(move)
 
@@ -312,7 +344,7 @@ class Solver:
                 all_pll.append(copy.deepcopy(solution_oll))
 
         return all_pll
-    
+
     def _convertToZ2(self, string):
         stringArr = string.split(" ")
         final = ""
@@ -341,11 +373,13 @@ class Solver:
             solution.setCross(self._convertToZ2(solution.getCross()))
             for j, f2l in enumerate(solution.getF2L()):
                 solution.getF2L()[j] = self._convertToZ2(f2l)
-            
+
             all_pll[i] = copy.deepcopy(solution)
+            all_pll[i].fixPostAndPre()
+            all_pll[i].calculateSize()
 
         return all_pll
-    
+
 
 if __name__ == "__main__":
     scramble = input("Enter scramble: ")

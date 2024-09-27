@@ -26,7 +26,7 @@ class OLLSolver:
 
         u_moves = ["U" for i in range(counter)]
 
-        self.solutions = copy.deepcopy(self.table[cube_state])
+        self.solutions = copy.deepcopy(self.table[cube_state][:len(self.table[cube_state])//2])
         self.solutions.append(" ".join(u_moves))
 
         return self.solutions
